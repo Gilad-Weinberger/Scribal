@@ -70,6 +70,32 @@ const OnboardingFlow = () => {
     setUserData((prev) => ({ ...prev, ...data }));
   };
 
+  // Helper to check if all required fields are filled (not empty or whitespace)
+  const isComplete = () => {
+    const trimmed = {
+      displayName: (userData.displayName || "").trim(),
+      university: (userData.university || "").trim(),
+      major: (userData.major || "").trim(),
+      profilePictureUrl: (userData.profilePictureUrl || "").trim(),
+    };
+    return (
+      trimmed.displayName &&
+      trimmed.university &&
+      trimmed.major &&
+      trimmed.profilePictureUrl
+    );
+  };
+
+  // Sanitize userData before update: trim and convert empty strings to null
+  const getSanitizedUserData = () => {
+    return {
+      displayName: userData.displayName?.trim() || null,
+      university: userData.university?.trim() || null,
+      major: userData.major?.trim() || null,
+      profilePictureUrl: userData.profilePictureUrl?.trim() || null,
+    };
+  };
+
   const handleSubmit = async () => {
     if (!session?.user.id) {
       setError("You must be logged in to update your profile.");
@@ -78,7 +104,8 @@ const OnboardingFlow = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await updateUserDocument(session.user.id, userData);
+      const sanitized = getSanitizedUserData();
+      const result = await updateUserDocument(session.user.id, sanitized);
       if (result.success) {
         completeOnboarding();
         router.push("/dashboard");
@@ -132,7 +159,7 @@ const OnboardingFlow = () => {
           {currentStepIndex === steps.length - 1 && (
             <button
               onClick={handleSubmit}
-              disabled={isLoading}
+              disabled={isLoading || !isComplete()}
               className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:bg-gray-400"
             >
               {isLoading && (

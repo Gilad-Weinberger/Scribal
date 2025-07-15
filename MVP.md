@@ -7,12 +7,14 @@ Scribal is an AI writing assistant that learns your unique writing voice to crea
 ## Target Customers
 
 ### Primary: College Students (Ages 18-22)
+
 - **Busy STEM students** who struggle with required writing courses
 - **International students** who want to improve their English writing while maintaining authenticity
 - **Overwhelmed students** juggling multiple assignments and part-time jobs
 - **Average writers** who have good ideas but struggle to express them clearly
 
 ### Market Pain Points:
+
 - Students spend 8+ hours per week on writing assignments
 - 67% of students report anxiety about writing quality
 - Generic AI tools produce content that doesn't match their voice
@@ -135,8 +137,6 @@ src/
 │   ├── (dashboard)/
 │   │   ├── dashboard/
 │   │   │   └── page.tsx
-│   │   ├── profile/
-│   │   │   └── page.tsx
 │   │   ├── style-analysis/
 │   │   │   ├── page.tsx
 │   │   │   └── [styleId]/
@@ -151,6 +151,8 @@ src/
 │   │       ├── page.tsx
 │   │       └── [essayId]/
 │   │           └── page.tsx
+│   ├── profile/
+│   │       └── page.tsx
 │   ├── api/
 │   │   ├── auth/
 │   │   │   ├── login/
@@ -255,6 +257,7 @@ src/
 ### API Routes Detailed
 
 #### Authentication Routes
+
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/login` - User login
 - `POST /api/auth/verify-email` - Email verification
@@ -263,11 +266,13 @@ src/
 - `DELETE /api/auth/session` - Logout
 
 #### User Management Routes
+
 - `GET /api/user/profile` - Get user profile
 - `PUT /api/user/profile` - Update user profile
 - `GET /api/user/usage` - Get usage statistics
 
 #### Writing Style Routes
+
 - `GET /api/writing-style` - Get user's writing styles
 - `POST /api/writing-style` - Create new writing style
 - `GET /api/writing-style/[styleId]` - Get specific writing style
@@ -276,6 +281,7 @@ src/
 - `POST /api/writing-style/analyze` - Analyze uploaded essays for style
 
 #### Essay Management Routes
+
 - `GET /api/essays/samples` - Get user's sample essays
 - `POST /api/essays/samples/upload` - Upload sample essay
 - `GET /api/essays/samples/[essayId]` - Get specific sample essay
@@ -289,20 +295,240 @@ src/
 - `PUT /api/essays/generated/[essayId]/sections` - Update essay sections
 
 #### Analytics Routes
+
 - `POST /api/analytics/track` - Track user events
+
+## Page Descriptions
+
+### Public Pages
+
+#### Landing Page (`/`)
+
+- **Hero section** with value proposition and main CTA
+- **Feature highlights** showcasing the 3 core features
+- **How it works** step-by-step process explanation
+- **Testimonials** from beta users (students)
+- **Pricing** simple and transparent pricing tiers
+- **Footer** with links and contact information
+
+#### Authentication Pages (`/auth/*`)
+
+**Sign In Page (`/auth/signin`)**
+
+- **Login form** with email and password fields
+- **"Remember me"** checkbox option
+- **Forgot password** link
+- **Social login** options (Google, GitHub)
+- **Sign up** redirect for new users
+
+**Sign Up Page (`/auth/signup`)**
+
+- **Registration form** with email, password, and basic info
+- **University selection** dropdown
+- **Terms of service** acceptance
+- **Email verification** notice
+- **Sign in** redirect for existing users
+
+**Email Verification Page (`/auth/verify-email`)**
+
+- **Verification status** message
+- **Resend verification** email button
+- **Instructions** for checking email
+- **Support contact** for issues
+
+**Password Reset Page (`/auth/reset-password`)**
+
+- **Reset form** with new password fields
+- **Password strength** indicator
+- **Success confirmation** message
+- **Return to login** link
+
+### Protected Pages (Requires Authentication)
+
+#### Onboarding Flow (`/onboarding`)
+
+- **Welcome step** with personal greeting
+- **Academic info** university and major selection
+- **Profile picture** upload with cropping
+- **Review step** confirmation of details
+- **Progress indicators** showing completion status
+
+#### Dashboard (`/dashboard`)
+
+- **Welcome message** with personalized greeting
+- **Quick stats** essays generated, authenticity score, time saved
+- **Recent essays** grid with thumbnails and metadata
+- **Writing style** current profile with authenticity score
+- **Quick actions** generate new essay, upload samples
+- **Usage analytics** charts and progress tracking
+
+#### Profile Management (`/profile`)
+
+- **Personal information** edit form
+- **University details** and academic info
+- **Profile picture** upload and management
+- **Account settings** password change, email preferences
+- **Subscription status** current plan and billing
+- **Data export** download personal data
+
+#### Style Analysis (`/style-analysis`)
+
+**Style Analysis Dashboard (`/style-analysis`)**
+
+- **Upload interface** drag-and-drop for sample essays
+- **Current style profile** visual representation
+- **Sample essays** list with analysis status
+- **Style report** detailed characteristics breakdown
+- **Comparison tool** between different writing samples
+
+**Individual Style View (`/style-analysis/[styleId]`)**
+
+- **Detailed style metrics** vocabulary, complexity, tone
+- **Writing patterns** sentence structure analysis
+- **Sample phrases** commonly used expressions
+- **Authenticity baseline** score and explanation
+- **Edit/update** style profile options
+
+#### Essay Generator (`/essay-generator`)
+
+**Essay Generator Form (`/essay-generator`)**
+
+- **Prompt input** large text area for assignment details
+- **Requirements** word count, format, academic level
+- **Style selection** choose from user's writing styles
+- **Advanced options** tone, formality, complexity
+- **Generate button** with loading states
+- **Recent prompts** history for quick access
+
+**Essay Editor (`/essay-generator/[essayId]`)**
+
+- **Rich text editor** with formatting tools
+- **Authenticity meter** real-time scoring
+- **Section breakdown** intro, body, conclusion editing
+- **Suggestion panel** style improvement recommendations
+- **Version history** track changes and revisions
+- **Export options** PDF, DOCX, plain text
+
+**Essay Edit Mode (`/essay-generator/[essayId]/edit`)**
+
+- **Advanced editing** section-by-section refinement
+- **Authenticity feedback** per paragraph scoring
+- **Rewrite suggestions** AI-powered improvements
+- **Compare versions** side-by-side view
+- **Collaboration tools** comments and annotations
+
+#### Essay Library (`/essays`)
+
+**Essay Library (`/essays`)**
+
+- **Essay grid** thumbnail view of all generated essays
+- **Filter options** by date, subject, authenticity score
+- **Search functionality** find essays by title or content
+- **Bulk actions** delete, export, organize
+- **Sorting options** recent, popular, highest scoring
+- **Usage statistics** total essays, words written
+
+**Individual Essay View (`/essays/[essayId]`)**
+
+- **Full essay display** formatted for reading
+- **Metadata panel** creation date, word count, score
+- **Edit button** quick access to editor
+- **Export options** multiple format downloads
+- **Sharing tools** generate shareable links
+- **Analytics** view count, time spent
+
+#### Feedback Page (`/feedback`)
+
+- **Feedback form** with rating and comments
+- **Bug report** section for technical issues
+- **Feature requests** voting and suggestion system
+- **Contact information** for direct support
+- **FAQ section** common questions and answers
+- **Response tracking** status of submitted feedback
+
+### API Pages (Internal)
+
+#### Authentication API (`/api/auth/*`)
+
+- **Registration endpoint** user creation and validation
+- **Login endpoint** credential verification
+- **Session management** token refresh and validation
+- **Password reset** secure reset flow
+- **Email verification** confirmation handling
+
+#### User Management API (`/api/user/*`)
+
+- **Profile endpoints** CRUD operations for user data
+- **Usage tracking** analytics and statistics
+- **Subscription management** plan changes and billing
+- **Data export** user data download
+- **Account deletion** secure data removal
+
+#### Writing Style API (`/api/writing-style/*`)
+
+- **Style analysis** essay processing and pattern extraction
+- **Style management** CRUD operations for writing profiles
+- **Authenticity scoring** real-time comparison algorithms
+- **Style comparison** between different samples
+- **Bulk processing** multiple essay analysis
+
+#### Essay Management API (`/api/essays/*`)
+
+- **Essay generation** AI-powered content creation
+- **Essay storage** secure save and retrieval
+- **Section management** granular editing capabilities
+- **Export processing** format conversion
+- **Analytics tracking** usage and performance metrics
+
+#### Analytics API (`/api/analytics/*`)
+
+- **Event tracking** user interaction logging
+- **Performance metrics** system health monitoring
+- **Usage statistics** feature adoption tracking
+- **Error reporting** bug tracking and resolution
+- **A/B testing** experiment data collection
+
+### Error Pages
+
+#### 404 Not Found
+
+- **Friendly error message** with helpful context
+- **Navigation suggestions** links to main sections
+- **Search functionality** find what you're looking for
+- **Contact support** for persistent issues
+- **Return home** prominent CTA
+
+#### 500 Server Error
+
+- **Error notification** with incident ID
+- **Status page** link to system status
+- **Support contact** for urgent issues
+- **Retry options** refresh and reload
+- **Alternative actions** offline capabilities
+
+#### 403 Forbidden
+
+- **Access denied** message with explanation
+- **Login prompt** for authentication
+- **Permission requirements** what's needed
+- **Contact admin** for access requests
+- **Navigation options** return to allowed areas
 
 ## Core Features (MVP)
 
 ### 1. Personal Writing Style Analyzer 🎯
+
 **What it does:** Analyzes your previous essays to create a unique "writing DNA" profile
 
 **How it works:**
+
 - Upload 2-3 previous essays (PDF, DOCX, or text)
 - AI analyzes vocabulary patterns, sentence structure, and writing quirks
 - Creates a personalized style profile in 60 seconds
 - Shows you a "Style Report" with your writing characteristics
 
 **Technical Implementation:**
+
 - File upload with drag-and-drop interface
 - PDF/DOCX text extraction using libraries
 - OpenAI API for style analysis with custom prompts
@@ -310,6 +536,7 @@ src/
 - Real-time progress updates via Server-Sent Events
 
 **Database Flow:**
+
 1. User uploads essay → `sample_essays` table
 2. Background job analyzes style → updates `writing_styles` table
 3. Analysis results stored in `analysis_results` JSONB field
@@ -318,15 +545,18 @@ src/
 **Value:** Ensures all generated content matches YOUR authentic voice, not generic AI writing
 
 ### 2. Style-Matched Essay Generator ✍️
+
 **What it does:** Generates complete essays that sound like you wrote them
 
 **How it works:**
+
 - Input your assignment prompt and basic requirements
 - AI generates essays using your personal writing style
 - Content matches your vocabulary level and sentence patterns
 - Maintains your authentic voice throughout
 
 **Technical Implementation:**
+
 - Form-based prompt input with requirement fields
 - OpenAI API with custom system prompts using style data
 - Section-by-section generation (intro, body paragraphs, conclusion)
@@ -334,6 +564,7 @@ src/
 - Authenticity scoring using style comparison algorithms
 
 **Database Flow:**
+
 1. User submits prompt → creates `generated_essays` record
 2. Essay generated in sections → `essay_sections` table
 3. Authenticity score calculated and stored
@@ -342,15 +573,18 @@ src/
 **Value:** Complete essays in 10 minutes instead of 5+ hours, with authentic personal style
 
 ### 3. Authenticity Score Dashboard 📊
+
 **What it does:** Measures how well generated content matches your natural writing style
 
 **How it works:**
+
 - Real-time scoring of generated content (0-100% authenticity)
 - Highlights sections that don't match your style
 - Suggests improvements to make content more "you"
 - Tracks your writing consistency over time
 
 **Technical Implementation:**
+
 - Style comparison algorithms using vector similarity
 - Section-level authenticity scoring
 - Visual feedback with color-coded indicators
@@ -358,6 +592,7 @@ src/
 - Historical tracking and analytics
 
 **Database Flow:**
+
 1. Generated content analyzed against style profile
 2. Scores stored in `authenticity_score` fields
 3. Usage events tracked for analytics
@@ -368,6 +603,7 @@ src/
 ## Technical Implementation
 
 ### Architecture
+
 - **Frontend:** Next.js 14 with TypeScript, Tailwind CSS, React Hook Form
 - **Backend:** Supabase (PostgreSQL + Auth + Storage)
 - **AI:** OpenAI GPT-4 API for style analysis and generation
@@ -376,6 +612,7 @@ src/
 - **Analytics:** PostHog for user behavior tracking
 
 ### Key Technical Features
+
 - **File Upload:** Drag-and-drop with progress tracking
 - **Real-time Generation:** Server-sent events for live updates
 - **Style Matching:** Vector embeddings with cosine similarity
@@ -383,6 +620,7 @@ src/
 - **Responsive Design:** Mobile-first approach with PWA capabilities
 
 ### Security & Privacy
+
 - **Data Encryption:** All essay content encrypted at rest
 - **Row-Level Security:** Users can only access their own data
 - **Session Management:** Secure JWT tokens with refresh rotation
@@ -392,6 +630,7 @@ src/
 ## User Journey
 
 ### First-Time User (Complete Flow)
+
 1. **Landing Page** → Register with university email
 2. **Email Verification** → Click verification link
 3. **Onboarding** → Complete profile setup
@@ -403,6 +642,7 @@ src/
 9. **Export Essay** → Download in preferred format
 
 ### Returning User (Streamlined Flow)
+
 1. **Dashboard** → View recent essays and stats
 2. **New Essay** → Click "Generate New Essay"
 3. **Input Prompt** → Paste assignment requirements
@@ -411,6 +651,7 @@ src/
 6. **Export** → Download final essay
 
 ### Mobile Experience
+
 - **Responsive Design** → Works on all devices
 - **Touch-Friendly** → Large buttons and easy navigation
 - **Offline Capability** → PWA with offline essay editing
@@ -419,13 +660,16 @@ src/
 ## User Interface Design
 
 ### Design System
-- **Color Palette:** Modern blues and purples for trust and creativity
+
+- **Color Palette:**
+- **Primary Blue:** `#3456b2`
 - **Typography:** Clean, readable fonts (Inter/Roboto)
 - **Components:** Consistent UI library with shadcn/ui
 - **Animations:** Smooth transitions and micro-interactions
 - **Accessibility:** WCAG 2.1 AA compliance
 
 ### Key Screens
+
 1. **Dashboard:** Overview of essays, style score, recent activity
 2. **Style Analyzer:** Upload interface with progress tracking
 3. **Style Profile:** Visual representation of writing characteristics
@@ -436,6 +680,7 @@ src/
 ## Performance Optimization
 
 ### Frontend Performance
+
 - **Code Splitting:** Route-based code splitting
 - **Image Optimization:** Next.js Image component
 - **Caching:** SWR for data fetching and caching
@@ -443,6 +688,7 @@ src/
 - **Bundle Size:** Tree shaking and dead code elimination
 
 ### Backend Performance
+
 - **Database Optimization:** Proper indexing and query optimization
 - **Caching:** Redis cache for frequently accessed data
 - **CDN:** Static assets served via CDN
@@ -452,6 +698,7 @@ src/
 ## Success Metrics
 
 ### Product KPIs
+
 - **Monthly Active Users:** 1,000 by month 6
 - **Essay Generation Rate:** 3 essays per user per month
 - **Style Authenticity Score:** 90%+ average
@@ -459,6 +706,7 @@ src/
 - **Time to First Essay:** Under 5 minutes
 
 ### Technical KPIs
+
 - **Page Load Time:** Under 2 seconds
 - **API Response Time:** Under 500ms
 - **Uptime:** 99.9% availability
@@ -466,6 +714,7 @@ src/
 - **Generation Success Rate:** 95%+
 
 ### Business KPIs
+
 - **Monthly Recurring Revenue:** $15,000 by month 12
 - **Customer Acquisition Cost:** Under $30
 - **Monthly Churn Rate:** Under 10%
@@ -475,6 +724,7 @@ src/
 ## Competitive Advantage
 
 ### Why Scribal Wins
+
 1. **Personal Style Focus:** Only tool that truly learns YOUR voice
 2. **Authenticity First:** Built for academic integrity, not cheating
 3. **Student-Centric:** Designed specifically for student needs and budgets
@@ -482,6 +732,7 @@ src/
 5. **Privacy-Focused:** Your essays stay private and secure
 
 ### What Makes It Different
+
 - **Not a generic AI tool** - it's YOUR writing assistant
 - **Focuses on authenticity** over raw content generation
 - **Learns and improves** with each essay you write
@@ -491,6 +742,7 @@ src/
 ## Implementation Timeline
 
 ### Phase 1: Foundation (Weeks 1-4)
+
 - Database setup and migrations
 - User authentication system
 - Basic UI components and layouts
@@ -498,6 +750,7 @@ src/
 - OpenAI API integration
 
 ### Phase 2: Core Features (Weeks 5-8)
+
 - Style analysis engine
 - Essay generation system
 - Authenticity scoring
@@ -505,6 +758,7 @@ src/
 - User profile management
 
 ### Phase 3: Polish & Testing (Weeks 9-12)
+
 - UI/UX improvements
 - Performance optimization
 - Security hardening
@@ -512,6 +766,7 @@ src/
 - Bug fixes and refinements
 
 ### Phase 4: Launch Preparation (Weeks 13-16)
+
 - Final testing and QA
 - Documentation and help guides
 - Marketing website
@@ -521,12 +776,14 @@ src/
 ## Risk Mitigation
 
 ### Academic Integrity
+
 - **Transparency:** Clear labeling of AI assistance
 - **Educational Focus:** Positioned as learning tool, not cheating
 - **Usage Guidelines:** Clear policies on appropriate use
 - **Plagiarism Detection:** Built-in originality checking
 
 ### Technical Risks
+
 - **API Rate Limits:** Implement queuing and retry logic
 - **Data Privacy:** Full encryption and secure storage
 - **Cost Control:** Usage tracking and budget alerts
@@ -534,6 +791,7 @@ src/
 - **Downtime:** Multiple deployment environments
 
 ### Business Risks
+
 - **Market Competition:** Focus on unique value proposition
 - **User Acquisition:** Multiple marketing channels
 - **Feature Creep:** Strict MVP scope management
@@ -541,20 +799,15 @@ src/
 
 ## Development Resources
 
-### Team Structure
-- **Frontend Developer:** React/Next.js specialist
-- **Backend Developer:** Node.js/PostgreSQL expert
-- **AI/ML Engineer:** OpenAI API and NLP specialist
-- **UI/UX Designer:** Student-focused design experience
-- **Product Manager:** Educational technology background
-
 ### Technology Stack
+
 - **Frontend:** Next.js 14, TypeScript, Tailwind CSS
 - **Backend:** Supabase, PostgreSQL, Claude API
 - **Hosting:** Vercel, Supabase for file storage
 - **Monitoring:** PostHog, Vercel Analytics
 
 ### Development Environment
+
 - **Version Control:** Git with feature branching
 - **Code Quality:** ESLint, Prettier, TypeScript
 

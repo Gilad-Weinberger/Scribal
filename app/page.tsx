@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { signOut } from "@/lib/functions/authFunctions";
 
 export default function Home() {
   const { user } = useAuth();
@@ -17,14 +18,15 @@ export default function Home() {
         </p>
         <div className="mt-10 flex items-center justify-center gap-x-6">
           {user ? (
-            <form action="/auth/signout" method="post">
-              <button
-                type="submit"
-                className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Logout
-              </button>
-            </form>
+            <button
+              type="button"
+              className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              onClick={async () => {
+                signOut();
+              }}
+            >
+              Logout
+            </button>
           ) : (
             <Link
               href="/auth/signup"
