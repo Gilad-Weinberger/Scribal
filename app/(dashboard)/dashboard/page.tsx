@@ -1,7 +1,13 @@
 import React from "react";
+import { LayoutMain } from "@/components/ui";
+import { DashboardContent } from "@/components/dashboard";
 
 const page = () => {
-  return <div className="px-42 py-18">Dashboard</div>;
+  return (
+    <LayoutMain>
+      <DashboardContent />
+    </LayoutMain>
+  );
 };
 
 export default page;

@@ -9,29 +9,17 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- =====================================================
--- Tables
+-- ENUM Types
 -- =====================================================
-
--- Users table for authentication and profile
-
 CREATE TYPE public.user_role AS ENUM ('client', 'admin');
 
-CREATE TABLE public.users (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    email TEXT UNIQUE,
-    display_name TEXT,
-    role public.user_role DEFAULT 'client'::public.user_role,
-    university TEXT,
-    major TEXT,
-    profile_picture_url TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
-);
+-- =====================================================
+-- Tables
+-- =====================================================
 
 -- Writing styles table - stores user's unique writing DNA
 CREATE TABLE public.writing_styles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     style_name TEXT NOT NULL DEFAULT 'My Writing Style',
     vocabulary_level INTEGER CHECK (vocabulary_level >= 1 AND vocabulary_level <= 10),
     avg_sentence_length DECIMAL(5,2),
@@ -40,10 +28,27 @@ CREATE TABLE public.writing_styles (
     writing_patterns JSONB,
     sample_phrases TEXT[],
     authenticity_baseline DECIMAL(3,2) DEFAULT 0.00,
-    is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
+
+-- Users table for authentication and profile
+CREATE TABLE public.users (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT UNIQUE,
+    display_name TEXT,
+    role public.user_role DEFAULT 'client'::public.user_role,
+    university TEXT,
+    major TEXT,
+    profile_picture_url TEXT,
+    default_writing_style UUID REFERENCES public.writing_styles(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- Add user_id foreign key to writing_styles
+ALTER TABLE public.writing_styles
+ADD COLUMN user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE;
 
 -- Sample essays uploaded by users for style analysis
 CREATE TABLE public.sample_essays (

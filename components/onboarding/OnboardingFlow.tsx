@@ -17,7 +17,7 @@ const OnboardingFlow = () => {
   const [userData, setUserData] = useState<Partial<User>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { session, user, completeOnboarding } = useAuth();
+  const { user, completeOnboarding } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -97,7 +97,7 @@ const OnboardingFlow = () => {
   };
 
   const handleSubmit = async () => {
-    if (!session?.user.id) {
+    if (!user?.id) {
       setError("You must be logged in to update your profile.");
       return;
     }
@@ -105,7 +105,7 @@ const OnboardingFlow = () => {
     setError(null);
     try {
       const sanitized = getSanitizedUserData();
-      const result = await updateUserDocument(session.user.id, sanitized);
+      const result = await updateUserDocument(user.id, sanitized);
       if (result.success) {
         completeOnboarding();
         router.push("/dashboard");

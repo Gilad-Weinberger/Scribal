@@ -52,7 +52,7 @@ const StepProfilePicture = ({ data, onUpdate }: StepProfilePictureProps) => {
           alt="Profile Preview"
           width={64}
           height={64}
-          className="rounded-full bg-gray-200"
+          className="rounded-full bg-gray-200 object-cover w-16 h-16"
         />
         <div>
           <input

@@ -22,7 +22,7 @@ const StepReview = ({ data }: StepReviewProps) => {
               alt="Profile"
               width={64}
               height={64}
-              className="rounded-full"
+              className="rounded-full object-cover w-16 h-16"
             />
           ) : (
             <div className="flex items-center justify-center w-16 h-16 text-gray-400 bg-gray-200 rounded-full">

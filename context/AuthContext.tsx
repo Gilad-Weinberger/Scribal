@@ -10,12 +10,10 @@ import {
 import { Session } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { User as AppUser } from "@/lib/db-schemas";
-import { handleAuthStateChange } from "@/lib/functions/authFunctions.client";
-import { subscribeToUserDocument } from "@/lib/functions/userFunctions.client";
+import useRealtimeUser from "@/lib/hooks/useRealtimeUser";
 import { usePathname, useRouter } from "next/navigation";
 
 interface AuthContextType {
-  session: Session | null;
   user: AppUser | null;
   isLoading: boolean;
   completeOnboarding: () => void;
@@ -26,8 +24,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const supabase = createClient();
   const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<AppUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [sessionLoading, setSessionLoading] = useState(true);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
@@ -36,21 +33,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setOnboardingCompleted(true);
   };
 
+  // Initial session fetch effect
+  useEffect(() => {
+    const getInitialSession = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        setSession(session);
+      } catch (error) {
+        console.error("Error fetching initial session:", error);
+      } finally {
+        setSessionLoading(false);
+      }
+    };
+
+    getInitialSession();
+  }, [supabase]);
+
+  // Auth state change effect (session)
   useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
-      setIsLoading(true);
-      const user = await handleAuthStateChange(session);
-      setUser(user);
-      setIsLoading(false);
+      setSessionLoading(false);
     });
-
     return () => {
       subscription.unsubscribe();
     };
   }, [supabase]);
+
+  // Realtime user hook
+  const { user, isLoading: userLoading } = useRealtimeUser(
+    session?.user?.id || null
+  );
+
+  // Combined loading state
+  const isLoading = sessionLoading || userLoading;
 
   useEffect(() => {
     if (isLoading || onboardingCompleted) return;
@@ -88,25 +108,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, isLoading, pathname, router, onboardingCompleted]);
 
-  useEffect(() => {
-    let unsubscribe: (() => void) | undefined;
-    if (session?.user?.id) {
-      unsubscribe = subscribeToUserDocument(
-        session.user.id,
-        (updatedUser: AppUser | null) => {
-          setUser(updatedUser);
-        }
-      );
-    }
-    return () => {
-      unsubscribe?.();
-    };
-  }, [session]);
-
   return (
-    <AuthContext.Provider
-      value={{ session, user, isLoading, completeOnboarding }}
-    >
+    <AuthContext.Provider value={{ user, isLoading, completeOnboarding }}>
       {children}
     </AuthContext.Provider>
   );

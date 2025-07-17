@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 const Sidebar = () => {
   const pathname = usePathname();
   return (
-    <div className="flex flex-col h-full items-center fixed top-12 w-14 border-r-2 border-[#dfdfdf] py-3 gap-y-2 bg-[#fcfcfc]">
+    <div className="flex flex-col h-full items-center fixed top-12 w-14 border-r-2 border-border-default py-3 gap-y-2 bg-background-secondary">
       {sidebarItems.map((item) => {
         const isActive = pathname === item.href;
         return (
@@ -24,7 +24,7 @@ const Sidebar = () => {
             >
               <item.icon />
             </Link>
-            <span className="absolute left-full -ml-1 top-1/2 -translate-y-1/2 whitespace-nowrap bg-[#fcfcfc] text-black border-2 border-[#e2e2e2] px-2 py-1 rounded shadow opacity-0 group-hover:opacity-100 group-hover:translate-x-0 -translate-x-4 pointer-events-none group-hover:pointer-events-auto transition-all text-xs z-10">
+            <span className="absolute left-full -ml-1 top-1/2 -translate-y-1/2 whitespace-nowrap bg-background-secondary text-black border-2 border-border-light px-2 py-1 rounded shadow opacity-0 group-hover:opacity-100 group-hover:translate-x-0 -translate-x-4 pointer-events-none group-hover:pointer-events-auto transition-all text-xs z-10">
               {item.label}
             </span>
           </div>

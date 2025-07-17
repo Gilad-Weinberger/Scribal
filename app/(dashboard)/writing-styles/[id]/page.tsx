@@ -1,9 +1,14 @@
-import React from 'react'
+import { LayoutMain } from "@/components/ui";
+import React from "react";
 
-const page = () => {
+const page = async ({ params }: { params: { id: string } }) => {
+  const { id } = await params;
+
   return (
-    <div>page</div>
-  )
-}
+    <LayoutMain>
+      <div className="px-42 py-18">Single Writing Style {id}</div>
+    </LayoutMain>
+  );
+};
 
-export default page
+export default page;

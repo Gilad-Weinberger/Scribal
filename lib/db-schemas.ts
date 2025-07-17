@@ -20,6 +20,7 @@ export interface User {
   university: string | null;
   major: string | null;
   profilePictureUrl: string | null;
+  defaultWritingStyle: string | null;
   createdAt: string; // ISO timestamp string
   updatedAt: string; // ISO timestamp string
 }
@@ -35,7 +36,6 @@ export interface WritingStyle {
   writingPatterns: Json | null; // JSONB
   samplePhrases: string[] | null; // TEXT[]
   authenticityBaseline: number;
-  isActive: boolean;
   createdAt: string; // ISO timestamp string
   updatedAt: string; // ISO timestamp string
 }
@@ -103,6 +103,7 @@ export interface Database {
           university: string | null;
           major: string | null;
           profile_picture_url: string | null;
+          default_writing_style: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -114,6 +115,7 @@ export interface Database {
           university?: string | null;
           major?: string | null;
           profile_picture_url?: string | null;
+          default_writing_style?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -125,6 +127,7 @@ export interface Database {
           university?: string | null;
           major?: string | null;
           profile_picture_url?: string | null;
+          default_writing_style?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -141,7 +144,6 @@ export interface Database {
           writing_patterns: Json | null;
           sample_phrases: string[] | null;
           authenticity_baseline: number;
-          is_active: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -156,7 +158,6 @@ export interface Database {
           writing_patterns?: Json | null;
           sample_phrases?: string[] | null;
           authenticity_baseline?: number;
-          is_active?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -171,7 +172,6 @@ export interface Database {
           writing_patterns?: Json | null;
           sample_phrases?: string[] | null;
           authenticity_baseline?: number;
-          is_active?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -373,6 +373,7 @@ export const dbRowToUser = (row: UserRow): User => ({
   university: row.university,
   major: row.major,
   profilePictureUrl: row.profile_picture_url,
+  defaultWritingStyle: row.default_writing_style,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });
@@ -390,6 +391,8 @@ export const userToDbUpdate = (user: Partial<User>): UserUpdate => {
   if (user.major !== undefined) record.major = user.major;
   if (user.profilePictureUrl !== undefined)
     record.profile_picture_url = user.profilePictureUrl;
+  if (user.defaultWritingStyle !== undefined)
+    record.default_writing_style = user.defaultWritingStyle;
 
   return record as UserUpdate;
 };

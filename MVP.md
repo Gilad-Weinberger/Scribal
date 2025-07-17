@@ -27,81 +27,80 @@ Scribal is an AI writing assistant that learns your unique writing voice to crea
 ```sql
 -- Users table for authentication and profile
 CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
-    university VARCHAR(200),
-    major VARCHAR(200),
-    profile_picture_url TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- Unique identifier for the user (UUID)
+    email VARCHAR(255) UNIQUE NOT NULL, -- User's email address (must be unique)
+    password_hash VARCHAR(255) NOT NULL, -- Hashed password for authentication
+    first_name VARCHAR(100) NOT NULL, -- User's first name
+    last_name VARCHAR(100) NOT NULL, -- User's last name
+    university VARCHAR(200), -- Name of the user's university (optional)
+    major VARCHAR(200), -- User's major or field of study (optional)
+    profile_picture_url TEXT, -- URL to the user's profile picture (optional)
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), -- Timestamp when the user was created
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() -- Timestamp when the user was last updated
 );
 
 -- Writing styles table - stores user's unique writing DNA
 CREATE TABLE writing_styles (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    style_name VARCHAR(100) NOT NULL DEFAULT 'My Writing Style',
-    vocabulary_level INTEGER CHECK (vocabulary_level >= 1 AND vocabulary_level <= 10),
-    avg_sentence_length DECIMAL(5,2),
-    complexity_score DECIMAL(3,2),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- Unique identifier for the writing style (UUID)
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE, -- Reference to the user who owns this style
+    style_name VARCHAR(100) NOT NULL DEFAULT 'My Writing Style', -- Name of the writing style profile
+    vocabulary_level INTEGER CHECK (vocabulary_level >= 1 AND vocabulary_level <= 10), -- Numeric level (1-10) indicating vocabulary sophistication
+    avg_sentence_length DECIMAL(5,2), -- Average sentence length in the user's writing
+    complexity_score DECIMAL(3,2), -- Numeric score representing writing complexity
     tone_analysis JSONB, -- stores personality traits, formality level, etc.
     writing_patterns JSONB, -- stores sentence structures, transitions, etc.
     sample_phrases TEXT[], -- array of commonly used phrases
-    authenticity_baseline DECIMAL(3,2) DEFAULT 0.00,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    authenticity_baseline DECIMAL(3,2) DEFAULT 0.00, -- Baseline authenticity score for this style
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), -- Timestamp when the style was created
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() -- Timestamp when the style was last updated
 );
 
 -- Sample essays uploaded by users for style analysis
 CREATE TABLE sample_essays (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    writing_style_id UUID REFERENCES writing_styles(id) ON DELETE CASCADE,
-    title VARCHAR(300) NOT NULL,
-    content TEXT NOT NULL,
-    word_count INTEGER NOT NULL,
-    file_name VARCHAR(255),
-    file_size INTEGER,
-    upload_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- Unique identifier for the sample essay (UUID)
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE, -- Reference to the user who uploaded the essay
+    writing_style_id UUID REFERENCES writing_styles(id) ON DELETE CASCADE, -- Reference to the writing style this essay is linked to
+    title VARCHAR(300) NOT NULL, -- Title of the uploaded essay
+    content TEXT NOT NULL, -- Full text content of the essay
+    word_count INTEGER NOT NULL, -- Number of words in the essay
+    file_name VARCHAR(255), -- Original file name of the uploaded essay
+    file_size INTEGER, -- Size of the uploaded file (in bytes)
+    upload_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(), -- Timestamp when the essay was uploaded
     analysis_status VARCHAR(50) DEFAULT 'pending', -- pending, analyzing, completed, error
     analysis_results JSONB, -- detailed style analysis data
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() -- Timestamp when the essay record was created
 );
 
 -- Generated essays and their metadata
 CREATE TABLE generated_essays (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    writing_style_id UUID REFERENCES writing_styles(id) ON DELETE CASCADE,
-    title VARCHAR(300) NOT NULL,
-    prompt TEXT NOT NULL,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- Unique identifier for the generated essay (UUID)
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE, -- Reference to the user who generated the essay
+    writing_style_id UUID REFERENCES writing_styles(id) ON DELETE CASCADE, -- Reference to the writing style used for generation
+    title VARCHAR(300) NOT NULL, -- Title of the generated essay
+    prompt TEXT NOT NULL, -- Assignment prompt or instructions provided by the user
     requirements TEXT, -- assignment requirements, word count, etc.
-    generated_content TEXT NOT NULL,
-    word_count INTEGER NOT NULL,
-    authenticity_score DECIMAL(3,2) DEFAULT 0.00,
+    generated_content TEXT NOT NULL, -- Full text of the generated essay
+    word_count INTEGER NOT NULL, -- Number of words in the generated essay
+    authenticity_score DECIMAL(3,2) DEFAULT 0.00, -- Score indicating how well the essay matches the user's style
     generation_time_ms INTEGER, -- time taken to generate
     status VARCHAR(50) DEFAULT 'completed', -- generating, completed, error
-    is_favorite BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    is_favorite BOOLEAN DEFAULT FALSE, -- Whether the essay is marked as a favorite by the user
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), -- Timestamp when the essay was generated
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() -- Timestamp when the essay was last updated
 );
 
 -- Essay sections for granular editing and authenticity tracking
 CREATE TABLE essay_sections (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    generated_essay_id UUID REFERENCES generated_essays(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- Unique identifier for the essay section (UUID)
+    generated_essay_id UUID REFERENCES generated_essays(id) ON DELETE CASCADE, -- Reference to the generated essay this section belongs to
     section_type VARCHAR(50) NOT NULL, -- introduction, body_paragraph, conclusion
-    section_order INTEGER NOT NULL,
-    content TEXT NOT NULL,
-    authenticity_score DECIMAL(3,2) DEFAULT 0.00,
-    user_edited BOOLEAN DEFAULT FALSE,
-    edit_count INTEGER DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    section_order INTEGER NOT NULL, -- Order of the section within the essay
+    content TEXT NOT NULL, -- Text content of the section
+    authenticity_score DECIMAL(3,2) DEFAULT 0.00, -- Authenticity score for this section
+    user_edited BOOLEAN DEFAULT FALSE, -- Whether the user has edited this section
+    edit_count INTEGER DEFAULT 0, -- Number of times this section has been edited
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), -- Timestamp when the section was created
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() -- Timestamp when the section was last updated
 );
 ```
 
