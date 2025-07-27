@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import Breadcrumb from "./Breadcrumb";
 
 const Navbar = () => {
   const router = useRouter();
@@ -14,7 +15,7 @@ const Navbar = () => {
     <div>
       <div className="flex items-center fixed bg-background-secondary w-full justify-between h-12 border-b-2 border-border-default px-4">
         <div className="flex items-center gap-x-2">
-          <Image src="/globe.svg" alt="logo" width={20} height={20} />
+          <Breadcrumb />
         </div>
         <div className="flex items-center gap-x-2">
           <Link

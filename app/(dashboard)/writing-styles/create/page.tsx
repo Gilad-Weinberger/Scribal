@@ -1,18 +1,54 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { LayoutNavbar } from "@/components/ui";
 import { CreateWritingStyleForm } from "@/components/writing-styles";
+import { processWritingStyleCreation } from "@/lib/functions/writingStyleFunctions.client";
+import { useAuth } from "@/context/AuthContext";
 
 const Page = () => {
-  const handleSubmit = (data: { name: string; files: FileList | null }) => {
-    // Handle form submission here
-    console.log("Form submitted:", data);
+  const router = useRouter();
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | undefined>();
+
+  const handleSubmit = async (data: {
+    name: string;
+    files: FileList | null;
+  }) => {
+    if (!user) {
+      setError("You must be logged in to create a writing style");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(undefined);
+
+    try {
+      const result = await processWritingStyleCreation(user.id, data);
+
+      if (result.success && result.writingStyleId) {
+        // Redirect to the writing styles page on success
+        router.push("/writing-styles");
+      } else {
+        setError(result.error || "Failed to create writing style");
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+      console.error("Error creating writing style:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <LayoutNavbar>
-      <CreateWritingStyleForm onSubmit={handleSubmit} />
+      <CreateWritingStyleForm
+        onSubmit={handleSubmit}
+        isLoading={isLoading}
+        error={error}
+      />
     </LayoutNavbar>
   );
 };
