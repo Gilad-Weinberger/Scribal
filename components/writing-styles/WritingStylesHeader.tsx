@@ -19,7 +19,7 @@ const WritingStylesHeader: React.FC<WritingStylesHeaderProps> = ({
   };
 
   return (
-    <div className="px-42 py-18 flex items-center gap-x-1">
+    <div className="px-42 py-18 pb-8 flex items-center gap-x-1">
       <Link
         className="bg-primary cursor-pointer text-sm text-white px-4 py-2 rounded-md hover:bg-primary-hover transition-colors"
         href="/writing-styles/create"

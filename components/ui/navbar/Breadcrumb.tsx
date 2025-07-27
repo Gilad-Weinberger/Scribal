@@ -1,8 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { getWritingStyle } from "@/lib/functions/writingStyleFunctions";
+import {
+  getSampleDocument,
+  getGeneratedDocument,
+} from "@/lib/functions/documentFunctions";
 
 const LogoIcon = () => (
   <svg
@@ -44,9 +49,11 @@ interface BreadcrumbItem {
 
 const Breadcrumb = () => {
   const pathname = usePathname();
+  const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Generate breadcrumb items based on pathname
-  const generateBreadcrumbs = (): BreadcrumbItem[] => {
+  const generateBreadcrumbs = async (): Promise<BreadcrumbItem[]> => {
     const segments = pathname.split("/").filter((segment) => segment !== "");
 
     if (segments.length === 0) {
@@ -56,12 +63,15 @@ const Breadcrumb = () => {
     const breadcrumbs: BreadcrumbItem[] = [];
     let currentPath = "";
 
-    segments.forEach((segment, index) => {
+    for (let i = 0; i < segments.length; i++) {
+      const segment = segments[i];
       currentPath += `/${segment}`;
-      const isActive = index === segments.length - 1;
+      const isActive = i === segments.length - 1;
 
       // Format segment name for display
       let displayName = segment;
+
+      // Handle known segments
       if (segment === "dashboard") displayName = "Dashboard";
       else if (segment === "documents") displayName = "Documents";
       else if (segment === "writing-styles") displayName = "Writing Styles";
@@ -72,11 +82,65 @@ const Breadcrumb = () => {
       else if (segment === "onboarding") displayName = "Onboarding";
       else if (segment === "feedback") displayName = "Feedback";
       else {
-        // Capitalize and format other segments
-        displayName = segment
-          .split("-")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
+        // Handle dynamic segments (IDs) that need to be resolved to names
+        const isUUID =
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            segment
+          );
+
+        if (isUUID) {
+          // Determine the context based on the previous segment
+          const previousSegment = i > 0 ? segments[i - 1] : "";
+
+          if (previousSegment === "writing-styles") {
+            // This is a writing style ID
+            try {
+              const result = await getWritingStyle(segment);
+              if (result.success && result.writingStyle) {
+                displayName = result.writingStyle.styleName;
+              } else {
+                displayName = "Writing Style";
+              }
+            } catch {
+              displayName = "Writing Style";
+            }
+          } else if (
+            previousSegment === "documents" ||
+            previousSegment === "samples" ||
+            previousSegment === "generated"
+          ) {
+            // This is a document ID - try both sample and generated documents
+            try {
+              // Try sample document first
+              const sampleResult = await getSampleDocument(segment);
+              if (sampleResult.success && sampleResult.sampleDocument) {
+                displayName = sampleResult.sampleDocument.title;
+              } else {
+                // Try generated document
+                const generatedResult = await getGeneratedDocument(segment);
+                if (
+                  generatedResult.success &&
+                  generatedResult.generatedDocument
+                ) {
+                  displayName = generatedResult.generatedDocument.title;
+                } else {
+                  displayName = "Document";
+                }
+              }
+            } catch {
+              displayName = "Document";
+            }
+          } else {
+            // Default fallback for UUIDs
+            displayName = "Item";
+          }
+        } else {
+          // Capitalize and format other segments
+          displayName = segment
+            .split("-")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
+        }
       }
 
       breadcrumbs.push({
@@ -84,12 +148,73 @@ const Breadcrumb = () => {
         href: currentPath,
         isActive,
       });
-    });
+    }
 
     return breadcrumbs;
   };
 
-  const breadcrumbs = generateBreadcrumbs();
+  useEffect(() => {
+    const fetchBreadcrumbs = async () => {
+      setIsLoading(true);
+      try {
+        const breadcrumbItems = await generateBreadcrumbs();
+        setBreadcrumbs(breadcrumbItems);
+      } catch (error) {
+        console.error("Error generating breadcrumbs:", error);
+        // Fallback to basic breadcrumbs without dynamic names
+        const segments = pathname
+          .split("/")
+          .filter((segment) => segment !== "");
+        const fallbackBreadcrumbs: BreadcrumbItem[] = [];
+        let currentPath = "";
+
+        segments.forEach((segment, index) => {
+          currentPath += `/${segment}`;
+          const isActive = index === segments.length - 1;
+
+          let displayName = segment;
+          if (segment === "dashboard") displayName = "Dashboard";
+          else if (segment === "documents") displayName = "Documents";
+          else if (segment === "writing-styles") displayName = "Writing Styles";
+          else if (segment === "create") displayName = "Create";
+          else if (segment === "auth") displayName = "Auth";
+          else if (segment === "signin") displayName = "Sign In";
+          else if (segment === "signup") displayName = "Sign Up";
+          else if (segment === "onboarding") displayName = "Onboarding";
+          else if (segment === "feedback") displayName = "Feedback";
+          else {
+            displayName = segment
+              .split("-")
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" ");
+          }
+
+          fallbackBreadcrumbs.push({
+            name: displayName,
+            href: currentPath,
+            isActive,
+          });
+        });
+
+        setBreadcrumbs(fallbackBreadcrumbs);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBreadcrumbs();
+  }, [pathname]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-gray-600">
+        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100">
+          <LogoIcon />
+        </div>
+        <div className="animate-pulse bg-gray-200 h-4 w-24 rounded"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2 text-sm text-gray-600">
