@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signUpWithEmail } from "@/lib/functions/authFunctions";
-import AuthCard from "./AuthCard";
 import AuthInput from "./AuthInput";
 import AuthButton from "./AuthButton";
 
@@ -12,7 +11,7 @@ export default function SignUpForm() {
   const error = searchParams.get("error");
 
   return (
-    <AuthCard>
+    <>
       <h1 className="text-2xl font-bold text-center text-gray-900">
         Create an Account
       </h1>
@@ -55,6 +54,6 @@ export default function SignUpForm() {
           Sign in
         </Link>
       </p>
-    </AuthCard>
+    </>
   );
 }

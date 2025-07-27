@@ -69,6 +69,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session?.user?.id || null
   );
 
+  console.log("user", user);
+
   // Combined loading state
   const isLoading = sessionLoading || userLoading;
 

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LayoutNavbar } from "@/components/ui";
-import { CreateWritingStyleForm } from "@/components/writing-styles";
+import CreateWritingStyleForm from "@/components/writing-styles/create/CreateWritingStyleForm";
 import { processWritingStyleCreation } from "@/lib/functions/writingStyleFunctions.client";
 import { useAuth } from "@/context/AuthContext";
 

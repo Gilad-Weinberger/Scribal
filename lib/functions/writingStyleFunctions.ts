@@ -1,6 +1,11 @@
 "use server";
 
-import { WritingStyle, WritingStyleInsert, WritingStyleUpdate, SampleDocument, SampleDocumentInsert } from "../db-schemas";
+import {
+  WritingStyle,
+  WritingStyleInsert,
+  SampleDocument,
+  SampleDocumentInsert,
+} from "../db-schemas";
 import { createClient as createServerClient } from "../supabase/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -23,12 +28,25 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 /**
  * Analyzes text content using Gemini AI to extract writing style characteristics
  */
-const analyzeWritingStyle = async (content: string): Promise<{
+const analyzeWritingStyle = async (
+  content: string
+): Promise<{
   vocabularyLevel: number;
   avgSentenceLength: number;
   complexityScore: number;
-  toneAnalysis: any;
-  writingPatterns: any;
+  toneAnalysis: {
+    formality: string;
+    emotion: string;
+    confidence: string;
+    engagement: string;
+  };
+  writingPatterns: {
+    sentenceStructure: string;
+    paragraphLength: string;
+    transitionWords: string[];
+    repetitivePhrases: string[];
+    uniqueCharacteristics: string[];
+  };
   samplePhrases: string[];
 }> => {
   try {
@@ -39,7 +57,7 @@ const analyzeWritingStyle = async (content: string): Promise<{
     
     {
       "vocabularyLevel": number (1-10, where 1 is basic and 10 is advanced),
-      "avgSentenceLength": number (average words per sentence),
+      "avgSentenceLength": number (average words per sentence, keep under 1000),
       "complexityScore": number (1-10, based on sentence structure complexity),
       "toneAnalysis": {
         "formality": "formal" | "semi-formal" | "informal",
@@ -66,23 +84,32 @@ const analyzeWritingStyle = async (content: string): Promise<{
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
-    
+
     // Extract JSON from the response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error("Failed to parse AI response");
     }
-    
+
     const analysis = JSON.parse(jsonMatch[0]);
-    
-    return {
-      vocabularyLevel: analysis.vocabularyLevel || 5,
-      avgSentenceLength: analysis.avgSentenceLength || 15,
-      complexityScore: analysis.complexityScore || 5,
+
+    // Validate and clamp numeric values to prevent overflow
+    const validatedAnalysis = {
+      vocabularyLevel: Math.max(1, Math.min(10, analysis.vocabularyLevel || 5)),
+      avgSentenceLength: Math.max(
+        0,
+        Math.min(999.99, analysis.avgSentenceLength || 15)
+      ),
+      complexityScore: Math.max(
+        0,
+        Math.min(9.99, analysis.complexityScore || 5)
+      ),
       toneAnalysis: analysis.toneAnalysis || {},
       writingPatterns: analysis.writingPatterns || {},
-      samplePhrases: analysis.samplePhrases || []
+      samplePhrases: analysis.samplePhrases || [],
     };
+
+    return validatedAnalysis;
   } catch (error) {
     console.error("Error analyzing writing style:", error);
     // Return default values if analysis fails
@@ -94,16 +121,16 @@ const analyzeWritingStyle = async (content: string): Promise<{
         formality: "semi-formal",
         emotion: "neutral",
         confidence: "medium",
-        engagement: "medium"
+        engagement: "medium",
       },
       writingPatterns: {
         sentenceStructure: "mixed",
         paragraphLength: "medium",
         transitionWords: [],
         repetitivePhrases: [],
-        uniqueCharacteristics: []
+        uniqueCharacteristics: [],
       },
-      samplePhrases: []
+      samplePhrases: [],
     };
   }
 };
@@ -117,23 +144,34 @@ export const createWritingStyle = async (
   sampleContent: string
 ): Promise<WritingStyleResult> => {
   const supabase = await createServerClient();
-  
+
   try {
     // Analyze the writing style using Gemini AI
     const analysis = await analyzeWritingStyle(sampleContent);
-    
+
     const now = new Date().toISOString();
-    
+
+    // Validate all numeric values to prevent overflow
+    const validatedAnalysis = {
+      vocabularyLevel: Math.max(1, Math.min(10, analysis.vocabularyLevel)),
+      avgSentenceLength: Math.max(
+        0,
+        Math.min(999.99, analysis.avgSentenceLength)
+      ),
+      complexityScore: Math.max(0, Math.min(9.99, analysis.complexityScore)),
+      authenticityBaseline: Math.max(0, Math.min(9.99, 85)), // Default baseline
+    };
+
     const newWritingStyle: WritingStyleInsert = {
       user_id: userId,
       style_name: styleName,
-      vocabulary_level: analysis.vocabularyLevel,
-      avg_sentence_length: analysis.avgSentenceLength,
-      complexity_score: analysis.complexityScore,
+      vocabulary_level: validatedAnalysis.vocabularyLevel,
+      avg_sentence_length: validatedAnalysis.avgSentenceLength,
+      complexity_score: validatedAnalysis.complexityScore,
       tone_analysis: analysis.toneAnalysis,
       writing_patterns: analysis.writingPatterns,
       sample_phrases: analysis.samplePhrases,
-      authenticity_baseline: 85, // Default baseline
+      authenticity_baseline: validatedAnalysis.authenticityBaseline,
       created_at: now,
       updated_at: now,
     };
@@ -201,11 +239,16 @@ export const createSampleDocument = async (
   fileSize: number
 ): Promise<SampleDocumentResult> => {
   const supabase = await createServerClient();
-  
+
   try {
-    const wordCount = content.split(/\s+/).length;
+    // Calculate word count and validate it doesn't exceed INTEGER limit
+    const wordCount = Math.min(content.split(/\s+/).length, 2147483647);
+
+    // Validate file size doesn't exceed INTEGER limit
+    const validatedFileSize = Math.min(fileSize, 2147483647);
+
     const now = new Date().toISOString();
-    
+
     const newSampleDocument: SampleDocumentInsert = {
       user_id: userId,
       writing_style_id: writingStyleId,
@@ -213,7 +256,7 @@ export const createSampleDocument = async (
       content,
       word_count: wordCount,
       file_name: fileName,
-      file_size: fileSize,
+      file_size: validatedFileSize,
       analysis_status: "completed",
       analysis_results: null,
       created_at: now,
@@ -250,7 +293,11 @@ export const createSampleDocument = async (
       wordCount: data.word_count,
       fileName: data.file_name,
       fileSize: data.file_size,
-      analysisStatus: data.analysis_status as "pending" | "analyzing" | "completed" | "error",
+      analysisStatus: data.analysis_status as
+        | "pending"
+        | "analyzing"
+        | "completed"
+        | "error",
       analysisResults: data.analysis_results,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
@@ -274,13 +321,15 @@ export const createSampleDocument = async (
 /**
  * Gets all writing styles for a user
  */
-export const getUserWritingStyles = async (userId: string): Promise<{
+export const getUserWritingStyles = async (
+  userId: string
+): Promise<{
   success: boolean;
   writingStyles?: WritingStyle[];
   error?: string;
 }> => {
   const supabase = await createServerClient();
-  
+
   try {
     const { data, error } = await supabase
       .from("writing_styles")
@@ -318,9 +367,7 @@ export const getUserWritingStyles = async (userId: string): Promise<{
     return {
       success: false,
       error:
-        error instanceof Error
-          ? error.message
-          : "Failed to get writing styles",
+        error instanceof Error ? error.message : "Failed to get writing styles",
     };
   }
 };
@@ -328,9 +375,11 @@ export const getUserWritingStyles = async (userId: string): Promise<{
 /**
  * Gets a specific writing style by ID
  */
-export const getWritingStyle = async (writingStyleId: string): Promise<WritingStyleResult> => {
+export const getWritingStyle = async (
+  writingStyleId: string
+): Promise<WritingStyleResult> => {
   const supabase = await createServerClient();
-  
+
   try {
     const { data, error } = await supabase
       .from("writing_styles")
@@ -375,9 +424,7 @@ export const getWritingStyle = async (writingStyleId: string): Promise<WritingSt
     return {
       success: false,
       error:
-        error instanceof Error
-          ? error.message
-          : "Failed to get writing style",
+        error instanceof Error ? error.message : "Failed to get writing style",
     };
   }
-}; 
+};
