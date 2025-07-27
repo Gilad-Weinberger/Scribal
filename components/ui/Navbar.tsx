@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import Breadcrumb from "./Breadcrumb";
+import Breadcrumb from "./navbar/Breadcrumb";
 
 const Navbar = () => {
   const router = useRouter();
