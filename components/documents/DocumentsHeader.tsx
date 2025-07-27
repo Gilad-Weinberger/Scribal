@@ -3,11 +3,11 @@
 import React, { useState } from "react";
 import ModalNoExistingWritingStyle from "./ModalNoExistingWritingStyle";
 
-interface EssaysHeaderProps {
+interface DocumentsHeaderProps {
   onSearch?: (query: string) => void;
 }
 
-const EssaysHeader: React.FC<EssaysHeaderProps> = ({ onSearch }) => {
+const DocumentsHeader: React.FC<DocumentsHeaderProps> = ({ onSearch }) => {
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -29,11 +29,11 @@ const EssaysHeader: React.FC<EssaysHeaderProps> = ({ onSearch }) => {
           onClick={handleNewEssay}
           className="bg-primary cursor-pointer text-sm text-white px-4 py-2 rounded-md hover:bg-primary-hover transition-colors"
         >
-          <p>New Essay</p>
+          <p>New Document</p>
         </button>
         <input
           type="text"
-          placeholder="Search essays..."
+          placeholder="Search documents..."
           value={searchQuery}
           onChange={handleSearchChange}
           className="ml-4 px-3 py-2 border border-border-default rounded-md focus:outline-none focus:ring-2 focus:ring-primary-focus text-sm bg-background-input w-64"
@@ -65,4 +65,4 @@ const EssaysHeader: React.FC<EssaysHeaderProps> = ({ onSearch }) => {
   );
 };
 
-export default EssaysHeader;
+export default DocumentsHeader;

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { EssaysHeader } from "@/components/essays";
+import { DocumentsHeader } from "@/components/documents";
 import { LayoutMain } from "@/components/ui";
 
 const Page = () => {
@@ -11,7 +11,7 @@ const Page = () => {
 
   return (
     <LayoutMain>
-      <EssaysHeader onSearch={handleSearch} />
+      <DocumentsHeader onSearch={handleSearch} />
     </LayoutMain>
   );
 };

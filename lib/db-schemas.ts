@@ -40,7 +40,7 @@ export interface WritingStyle {
   updatedAt: string; // ISO timestamp string
 }
 
-export interface SampleEssay {
+export interface SampleDocument {
   id: string; // UUID
   userId: string; // UUID
   writingStyleId: string | null; // UUID
@@ -55,7 +55,7 @@ export interface SampleEssay {
   updatedAt: string; // ISO timestamp string
 }
 
-export interface GeneratedEssay {
+export interface GeneratedDocument {
   id: string; // UUID
   userId: string; // UUID
   writingStyleId: string | null; // UUID
@@ -72,9 +72,9 @@ export interface GeneratedEssay {
   updatedAt: string; // ISO timestamp string
 }
 
-export interface EssaySection {
+export interface DocumentSection {
   id: string; // UUID
-  generatedEssayId: string; // UUID
+  generatedDocumentId: string; // UUID
   sectionType: "introduction" | "body_paragraph" | "conclusion";
   sectionOrder: number;
   content: string;
@@ -176,7 +176,7 @@ export interface Database {
           updated_at?: string;
         };
       };
-      sample_essays: {
+      sample_documents: {
         Row: {
           id: string;
           user_id: string;
@@ -220,7 +220,7 @@ export interface Database {
           updated_at?: string;
         };
       };
-      generated_essays: {
+      generated_documents: {
         Row: {
           id: string;
           user_id: string;
@@ -270,10 +270,10 @@ export interface Database {
           updated_at?: string;
         };
       };
-      essay_sections: {
+      document_sections: {
         Row: {
           id: string;
-          generated_essay_id: string;
+          generated_document_id: string;
           section_type: string;
           section_order: number;
           content: string;
@@ -285,7 +285,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          generated_essay_id: string;
+          generated_document_id: string;
           section_type: string;
           section_order: number;
           content: string;
@@ -297,7 +297,7 @@ export interface Database {
         };
         Update: {
           id?: string;
-          generated_essay_id?: string;
+          generated_document_id?: string;
           section_type?: string;
           section_order?: number;
           content?: string;
@@ -346,17 +346,17 @@ export type WritingStyleRow = Tables<"writing_styles">;
 export type WritingStyleInsert = Inserts<"writing_styles">;
 export type WritingStyleUpdate = Updates<"writing_styles">;
 
-export type SampleEssayRow = Tables<"sample_essays">;
-export type SampleEssayInsert = Inserts<"sample_essays">;
-export type SampleEssayUpdate = Updates<"sample_essays">;
+export type SampleDocumentRow = Tables<"sample_documents">;
+export type SampleDocumentInsert = Inserts<"sample_documents">;
+export type SampleDocumentUpdate = Updates<"sample_documents">;
 
-export type GeneratedEssayRow = Tables<"generated_essays">;
-export type GeneratedEssayInsert = Inserts<"generated_essays">;
-export type GeneratedEssayUpdate = Updates<"generated_essays">;
+export type GeneratedDocumentRow = Tables<"generated_documents">;
+export type GeneratedDocumentInsert = Inserts<"generated_documents">;
+export type GeneratedDocumentUpdate = Updates<"generated_documents">;
 
-export type EssaySectionRow = Tables<"essay_sections">;
-export type EssaySectionInsert = Inserts<"essay_sections">;
-export type EssaySectionUpdate = Updates<"essay_sections">;
+export type DocumentSectionRow = Tables<"document_sections">;
+export type DocumentSectionInsert = Inserts<"document_sections">;
+export type DocumentSectionUpdate = Updates<"document_sections">;
 
 /*
  |-----------------------------------------------------------------------------

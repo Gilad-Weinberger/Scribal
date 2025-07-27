@@ -10,8 +10,8 @@ export const sidebarItems = [
   {
     id: 2,
     icon: DocumentIcon,
-    label: "Essays",
-    href: "/essays",
+    label: "Documents",
+    href: "/documents",
   },
   {
     id: 3,
