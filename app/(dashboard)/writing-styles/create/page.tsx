@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LayoutNavbar } from "@/components/ui";
 import CreateWritingStyleForm from "@/components/writing-styles/create/CreateWritingStyleForm";
-import { processWritingStyleCreation } from "@/lib/functions/writingStyleFunctions.client";
+import { clientHelpers } from "@/lib/api-client";
 import { useAuth } from "@/context/AuthContext";
 
 const Page = () => {
@@ -26,7 +26,7 @@ const Page = () => {
     setError(undefined);
 
     try {
-      const result = await processWritingStyleCreation(user.id, data);
+      const result = await clientHelpers.processWritingStyleCreation(data);
 
       if (result.success && result.writingStyleId) {
         // Redirect to the writing styles page on success

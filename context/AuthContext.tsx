@@ -71,8 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   console.log("user", user);
 
-  // Combined loading state
-  const isLoading = sessionLoading || userLoading;
+  // Combined loading state - only consider loading if we have a session but user is still loading
+  const isLoading = sessionLoading || (!!session && userLoading);
 
   useEffect(() => {
     if (isLoading || onboardingCompleted) return;
@@ -81,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const isHomePage = pathname === "/";
     const isOnboardingPage = pathname.startsWith("/onboarding");
 
+    // Only redirect if there's no session AND we're not on an allowed page
     if (!session && !isAuthPage && !isHomePage && !isOnboardingPage) {
       router.push("/auth/signin");
     }

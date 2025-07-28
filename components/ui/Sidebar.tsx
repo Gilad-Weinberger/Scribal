@@ -10,7 +10,8 @@ const Sidebar = () => {
   return (
     <div className="flex flex-col h-full items-center fixed top-12 w-14 border-r-2 border-border-default py-3 gap-y-2 bg-background-secondary">
       {sidebarItems.map((item) => {
-        const isActive = pathname === item.href;
+        const isActive =
+          pathname === item.href || pathname.startsWith(item.href + "/");
         return (
           <div
             key={item.id}

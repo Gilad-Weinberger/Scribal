@@ -1,6 +1,10 @@
 "use client";
 
-import { createWritingStyle, createSampleDocument } from "./writingStyleFunctions";
+import {
+  createWritingStyle,
+  createSampleDocument,
+  getUserWritingStyles,
+} from "./writingStyleFunctions";
 
 export interface CreateWritingStyleData {
   name: string;
@@ -31,7 +35,7 @@ export const processWritingStyleCreation = async (
     // Validate file types
     for (let i = 0; i < data.files.length; i++) {
       const file = data.files[i];
-      if (!file.name.toLowerCase().endsWith('.txt')) {
+      if (!file.name.toLowerCase().endsWith(".txt")) {
         return {
           success: false,
           error: `File "${file.name}" is not a .txt file. Please upload only .txt files.`,
@@ -80,11 +84,11 @@ export const processWritingStyleCreation = async (
     for (let i = 0; i < data.files.length; i++) {
       const file = data.files[i];
       const content = await readFileAsText(file);
-      
+
       await createSampleDocument(
         userId,
         writingStyleResult.writingStyle.id,
-        file.name.replace('.txt', ''),
+        file.name.replace(".txt", ""),
         content,
         file.name,
         file.size
@@ -107,6 +111,54 @@ export const processWritingStyleCreation = async (
 };
 
 /**
+ * Gets user writing styles for selection in document creation
+ */
+export const getUserWritingStylesForSelection = async (
+  userId: string
+): Promise<{
+  success: boolean;
+  writingStyles?: Array<{
+    id: string;
+    styleName: string;
+    vocabularyLevel: number | null;
+    toneAnalysis: any;
+  }>;
+  error?: string;
+}> => {
+  try {
+    const result = await getUserWritingStyles(userId);
+
+    if (!result.success || !result.writingStyles) {
+      return {
+        success: false,
+        error: result.error || "Failed to fetch writing styles",
+      };
+    }
+
+    // Transform the data to only include necessary fields for selection
+    const writingStyles = result.writingStyles.map((style) => ({
+      id: style.id,
+      styleName: style.styleName,
+      vocabularyLevel: style.vocabularyLevel,
+      toneAnalysis: style.toneAnalysis,
+    }));
+
+    return {
+      success: true,
+      writingStyles,
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch writing styles",
+    };
+  }
+};
+
+/**
  * Helper function to read file as text
  */
 const readFileAsText = (file: File): Promise<string> => {
@@ -114,13 +166,13 @@ const readFileAsText = (file: File): Promise<string> => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result;
-      if (typeof result === 'string') {
+      if (typeof result === "string") {
         resolve(result);
       } else {
-        reject(new Error('Failed to read file as text'));
+        reject(new Error("Failed to read file as text"));
       }
     };
-    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.onerror = () => reject(new Error("Failed to read file"));
     reader.readAsText(file);
   });
-}; 
+};

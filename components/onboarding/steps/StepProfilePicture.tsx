@@ -4,7 +4,7 @@ import React, { useState, useRef } from "react";
 import { User } from "@/lib/db-schemas";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
-import { uploadProfilePicture } from "@/lib/functions/userFunctions.client";
+import { userAPI } from "@/lib/api-client";
 
 interface StepProfilePictureProps {
   data: Partial<User>;
@@ -24,16 +24,18 @@ const StepProfilePicture = ({ data, onUpdate }: StepProfilePictureProps) => {
     if (file && user?.id) {
       setIsUploading(true);
       setError(null);
-      const { url, error: uploadError } = await uploadProfilePicture(
-        user.id,
-        file
-      );
-      if (url) {
-        onUpdate({ profilePictureUrl: url });
-      } else {
-        setError(uploadError);
+      try {
+        const result = await userAPI.uploadProfilePicture(file);
+        if (result.success && result.url) {
+          onUpdate({ profilePictureUrl: result.url });
+        } else {
+          setError(result.error || "Failed to upload image");
+        }
+      } catch (error) {
+        setError("Failed to upload image");
+      } finally {
+        setIsUploading(false);
       }
-      setIsUploading(false);
     }
   };
 

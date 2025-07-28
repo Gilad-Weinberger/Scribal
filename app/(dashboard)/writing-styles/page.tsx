@@ -4,7 +4,7 @@ import {
   WritingStylesHeader,
   WritingStylesGrid,
 } from "@/components/writing-styles";
-import { getUserWritingStyles } from "@/lib/functions/writingStyleFunctions";
+import { writingStylesAPI } from "@/lib/api-client";
 import { useAuth } from "@/context/AuthContext";
 import React, { useEffect, useState } from "react";
 import { WritingStyle } from "@/lib/db-schemas";
@@ -21,7 +21,7 @@ const Page = () => {
 
       try {
         setIsLoading(true);
-        const result = await getUserWritingStyles(user.id);
+        const result = await writingStylesAPI.getAllWritingStyles();
         if (result.success && result.writingStyles) {
           setWritingStyles(result.writingStyles);
         }

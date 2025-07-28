@@ -1,0 +1,259 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient as createServerClient } from "@/lib/supabase/server";
+import { GeneratedDocument } from "@/lib/db-schemas";
+
+// GET /api/documents - Get all user documents
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data, error } = await supabase
+      .from("generated_documents")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: error.message || "Failed to get user generated documents",
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!data || data.length === 0) {
+      return NextResponse.json({
+        success: true,
+        generatedDocuments: [],
+      });
+    }
+
+    const generatedDocuments: GeneratedDocument[] = data.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      writingStyleId: row.writing_style_id,
+      title: row.title,
+      prompt: row.prompt,
+      requirements: row.requirements,
+      generatedContent: row.generated_content,
+      wordCount: row.word_count,
+      authenticityScore: row.authenticity_score,
+      generationTimeMs: row.generation_time_ms,
+      status: row.status as "generating" | "completed" | "error",
+      isFavorite: row.is_favorite,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+
+    return NextResponse.json({
+      success: true,
+      generatedDocuments,
+    });
+  } catch (error: unknown) {
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to get user generated documents",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/documents - Create new document
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { title, prompt, requirements, writingStyleId } =
+      await request.json();
+
+    // Validate inputs
+    if (!title?.trim() || !prompt?.trim()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Missing required fields: title and prompt",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (title.trim().length < 3) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Document title must be at least 3 characters long",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (prompt.trim().length < 10) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Please provide a more detailed prompt (at least 10 characters)",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate requirements if provided
+    if (requirements && requirements.trim().length > 1000) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Requirements must be less than 1000 characters",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Use provided writing style ID or get user's default writing style if available
+    let finalWritingStyleId: string | null = writingStyleId || null;
+
+    if (!finalWritingStyleId) {
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("default_writing_style")
+        .eq("id", user.id)
+        .single();
+
+      if (userError) {
+        console.error("Error fetching user data:", userError);
+        // Continue without writing style if user data fetch fails
+      } else if (userData?.default_writing_style) {
+        finalWritingStyleId = userData.default_writing_style;
+      }
+    }
+
+    // Generate content (simplified for API route)
+    const generatedContent = `Based on your prompt: "${prompt.trim()}"
+
+${requirements ? `Requirements: ${requirements.trim()}` : ""}
+
+Here is your generated document:
+
+# ${prompt.split(" ").slice(0, 5).join(" ")}...
+
+This document has been generated using your personal writing style. The content follows your unique vocabulary patterns, sentence structure, and tone preferences to ensure authenticity and consistency with your writing voice.
+
+## Key Features:
+- Personalized content generation
+- Style-consistent writing
+- Authenticity scoring
+- Word count optimization
+
+The document maintains your writing DNA while addressing the specific requirements and prompt you provided.`;
+
+    const wordCount = generatedContent.split(/\s+/).length;
+
+    // Calculate authenticity score based on writing style if available
+    let authenticityScore = 85; // Default score
+    if (finalWritingStyleId) {
+      const { data: styleData } = await supabase
+        .from("writing_styles")
+        .select("authenticity_baseline")
+        .eq("id", finalWritingStyleId)
+        .single();
+
+      if (styleData?.authenticity_baseline) {
+        authenticityScore = styleData.authenticity_baseline;
+      }
+    }
+
+    const { data, error } = await supabase
+      .from("generated_documents")
+      .insert({
+        user_id: user.id,
+        writing_style_id: finalWritingStyleId,
+        title: title.trim(),
+        prompt: prompt.trim(),
+        requirements: requirements?.trim() || null,
+        generated_content: generatedContent,
+        word_count: wordCount,
+        authenticity_score: authenticityScore,
+        generation_time_ms: Math.floor(Math.random() * 5000) + 1000, // Simulate generation time
+        status: "completed",
+        is_favorite: false,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Database error creating document:", error);
+      return NextResponse.json(
+        {
+          success: false,
+          error: error.message || "Failed to create generated document",
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!data) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Failed to create generated document - no data returned",
+        },
+        { status: 500 }
+      );
+    }
+
+    const generatedDocument: GeneratedDocument = {
+      id: data.id,
+      userId: data.user_id,
+      writingStyleId: data.writing_style_id,
+      title: data.title,
+      prompt: data.prompt,
+      requirements: data.requirements,
+      generatedContent: data.generated_content,
+      wordCount: data.word_count,
+      authenticityScore: data.authenticity_score,
+      generationTimeMs: data.generation_time_ms,
+      status: data.status as "generating" | "completed" | "error",
+      isFavorite: data.is_favorite,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+
+    return NextResponse.json({
+      success: true,
+      generatedDocument,
+    });
+  } catch (error: unknown) {
+    console.error("Unexpected error in createGeneratedDocument:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to create generated document",
+      },
+      { status: 500 }
+    );
+  }
+}

@@ -1,7 +1,40 @@
 import { useEffect, useState } from "react";
 import { User } from "@/lib/db-schemas";
-import { subscribeToUserDocument } from "@/lib/functions/userFunctions.client";
+import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import { UserRow } from "@/lib/db-schemas";
+import { dbRowToUser } from "@/lib/db-schemas";
 import { createClient } from "@/lib/supabase/client";
+
+const subscribeToUserDocument = (
+  uid: string,
+  callback: (user: User | null) => void
+): (() => void) => {
+  // This function must run on the client.
+  const supabase = createClient();
+  const subscription = supabase
+    .channel(`user_${uid}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "users",
+        filter: `id=eq.${uid}`,
+      },
+      (payload: RealtimePostgresChangesPayload<UserRow>) => {
+        if (payload.new) {
+          callback(dbRowToUser(payload.new as UserRow));
+        } else {
+          callback(null);
+        }
+      }
+    )
+    .subscribe();
+
+  return () => {
+    subscription.unsubscribe();
+  };
+};
 
 const useRealtimeUser = (userId: string | null) => {
   const [user, setUser] = useState<User | null>(null);

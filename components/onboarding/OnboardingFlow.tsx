@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { User } from "@/lib/db-schemas";
 import ProgressBar from "./ui/ProgressBar";
 import { useAuth } from "@/context/AuthContext";
-import { updateUserDocument } from "@/lib/functions/userFunctions";
+import { userAPI } from "@/lib/api-client";
 
 import StepWelcome from "./steps/StepWelcome";
 import StepAcademicInfo from "./steps/StepAcademicInfo";
@@ -105,7 +105,7 @@ const OnboardingFlow = () => {
     setError(null);
     try {
       const sanitized = getSanitizedUserData();
-      const result = await updateUserDocument(user.id, sanitized);
+      const result = await userAPI.updateUser(sanitized);
       if (result.success) {
         completeOnboarding();
         router.push("/dashboard");

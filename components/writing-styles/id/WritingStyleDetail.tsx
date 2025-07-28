@@ -115,10 +115,16 @@ const WritingStyleDetail: React.FC<WritingStyleDetailProps> = ({
                 <div className="text-2xl font-bold text-primary mb-1">
                   {writingStyle.avgSentenceLength || 0}
                 </div>
-                <div className="text-sm text-gray-600">Avg. Sentence Length</div>
+                <div className="text-sm text-gray-600">
+                  Avg. Sentence Length
+                </div>
               </div>
               <div className="text-center">
-                <div className={`text-2xl font-bold mb-1 ${getComplexityColor(writingStyle.complexityScore || 0)}`}>
+                <div
+                  className={`text-2xl font-bold mb-1 ${getComplexityColor(
+                    writingStyle.complexityScore || 0
+                  )}`}
+                >
                   {writingStyle.complexityScore || 0}
                 </div>
                 <div className="text-sm text-gray-600">Complexity Score</div>
@@ -140,13 +146,21 @@ const WritingStyleDetail: React.FC<WritingStyleDetailProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-gray-700">Formality:</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getToneColor(toneAnalysis?.formality)}`}>
+                  <span className="text-sm font-medium text-gray-700">
+                    Formality:
+                  </span>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${getToneColor(
+                      toneAnalysis?.formality
+                    )}`}
+                  >
                     {toneAnalysis?.formality || "Unknown"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-gray-700">Emotion:</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Emotion:
+                  </span>
                   <span className="text-sm text-gray-900 capitalize">
                     {toneAnalysis?.emotion || "Unknown"}
                   </span>
@@ -154,13 +168,21 @@ const WritingStyleDetail: React.FC<WritingStyleDetailProps> = ({
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-gray-700">Confidence:</span>
-                  <span className={`text-sm font-medium capitalize ${getConfidenceColor(toneAnalysis?.confidence)}`}>
+                  <span className="text-sm font-medium text-gray-700">
+                    Confidence:
+                  </span>
+                  <span
+                    className={`text-sm font-medium capitalize ${getConfidenceColor(
+                      toneAnalysis?.confidence
+                    )}`}
+                  >
                     {toneAnalysis?.confidence || "Unknown"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-gray-700">Engagement:</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Engagement:
+                  </span>
                   <span className="text-sm text-gray-900 capitalize">
                     {toneAnalysis?.engagement || "Unknown"}
                   </span>
@@ -177,50 +199,62 @@ const WritingStyleDetail: React.FC<WritingStyleDetailProps> = ({
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <span className="text-sm font-medium text-gray-700">Sentence Structure:</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Sentence Structure:
+                  </span>
                   <p className="text-sm text-gray-900 capitalize">
                     {writingPatterns?.sentenceStructure || "Unknown"}
                   </p>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-700">Paragraph Length:</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Paragraph Length:
+                  </span>
                   <p className="text-sm text-gray-900 capitalize">
                     {writingPatterns?.paragraphLength || "Unknown"}
                   </p>
                 </div>
               </div>
 
-              {writingPatterns?.uniqueCharacteristics && writingPatterns.uniqueCharacteristics.length > 0 && (
-                <div>
-                  <span className="text-sm font-medium text-gray-700">Unique Characteristics:</span>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {writingPatterns.uniqueCharacteristics.map((characteristic, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs"
-                      >
-                        {characteristic}
-                      </span>
-                    ))}
+              {writingPatterns?.uniqueCharacteristics &&
+                writingPatterns.uniqueCharacteristics.length > 0 && (
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Unique Characteristics:
+                    </span>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {writingPatterns.uniqueCharacteristics.map(
+                        (characteristic, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs"
+                          >
+                            {characteristic}
+                          </span>
+                        )
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {writingPatterns?.transitionWords && writingPatterns.transitionWords.length > 0 && (
-                <div>
-                  <span className="text-sm font-medium text-gray-700">Common Transition Words:</span>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {writingPatterns.transitionWords.map((word, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs"
-                      >
-                        {word}
-                      </span>
-                    ))}
+              {writingPatterns?.transitionWords &&
+                writingPatterns.transitionWords.length > 0 && (
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Common Transition Words:
+                    </span>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {writingPatterns.transitionWords.map((word, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs"
+                        >
+                          {word}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </div>
         </div>
@@ -228,25 +262,26 @@ const WritingStyleDetail: React.FC<WritingStyleDetailProps> = ({
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Sample Phrases */}
-          {writingStyle.samplePhrases && writingStyle.samplePhrases.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Sample Phrases
-              </h3>
-              <div className="space-y-3">
-                {writingStyle.samplePhrases.map((phrase, index) => (
-                  <div
-                    key={index}
-                    className="p-3 bg-gray-50 rounded-lg border-l-4 border-primary"
-                  >
-                    <p className="text-sm text-gray-700 italic">
-                      &ldquo;{phrase}&rdquo;
-                    </p>
-                  </div>
-                ))}
+          {writingStyle.samplePhrases &&
+            writingStyle.samplePhrases.length > 0 && (
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Sample Phrases
+                </h3>
+                <div className="space-y-3">
+                  {writingStyle.samplePhrases.map((phrase, index) => (
+                    <div
+                      key={index}
+                      className="p-3 bg-gray-50 rounded-lg border-l-4 border-primary"
+                    >
+                      <p className="text-sm text-gray-700 italic">
+                        &ldquo;{phrase}&rdquo;
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Actions */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -271,4 +306,4 @@ const WritingStyleDetail: React.FC<WritingStyleDetailProps> = ({
   );
 };
 
-export default WritingStyleDetail; 
+export default WritingStyleDetail;

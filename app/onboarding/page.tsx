@@ -9,7 +9,7 @@ const OnboardingPage = () => {
           Welcome to Scribal
         </h1>
         <p className="text-center text-gray-600">
-          Let's get your profile set up.
+          Let&apos;s get your profile set up.
         </p>
         <OnboardingFlow />
       </div>

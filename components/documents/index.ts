@@ -1,2 +1,2 @@
-export { default as ModalNoExistingWritingStyle } from "./ModalNoExistingWritingStyle";
 export { default as DocumentsHeader } from "./DocumentsHeader";
+export { default as DocumentsGrid } from "./DocumentsGrid";

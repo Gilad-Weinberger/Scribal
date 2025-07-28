@@ -7,11 +7,11 @@ export default function LayoutMain({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="min-h-screen min-w-screen overflow-hidden bg-background-secondary">
+    <div className="min-h-screen overflow-hidden bg-background-secondary">
       <Navbar />
       <div className="flex flex-1">
         <Sidebar />
-        <div className="flex-1 pt-12 pl-14 imnmw-full bg-background-secondary">
+        <div className="flex-1 pt-12 pl-14 min-w-full bg-background-secondary">
           {children}
         </div>
       </div>

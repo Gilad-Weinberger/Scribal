@@ -2,10 +2,19 @@
 
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { signOut } from "@/lib/functions/authFunctions";
+import { authAPI } from "@/lib/api-client";
 
 export default function Home() {
   const { user } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await authAPI.signOut();
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  };
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
@@ -21,9 +30,7 @@ export default function Home() {
             <button
               type="button"
               className="rounded-md bg-primary px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-hover focus-visible:outline-offset-2 focus-visible:outline-primary-focus transition-colors"
-              onClick={async () => {
-                signOut();
-              }}
+              onClick={handleSignOut}
             >
               Logout
             </button>

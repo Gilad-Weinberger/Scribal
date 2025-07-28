@@ -1,13 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { getWritingStyle } from "@/lib/functions/writingStyleFunctions";
-import {
-  getSampleDocument,
-  getGeneratedDocument,
-} from "@/lib/functions/documentFunctions";
+import { writingStylesAPI, documentsAPI } from "@/lib/api-client";
 
 const LogoIcon = () => (
   <svg
@@ -53,7 +49,9 @@ const Breadcrumb = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Generate breadcrumb items based on pathname
-  const generateBreadcrumbs = async (): Promise<BreadcrumbItem[]> => {
+  const generateBreadcrumbs = useCallback(async (): Promise<
+    BreadcrumbItem[]
+  > => {
     const segments = pathname.split("/").filter((segment) => segment !== "");
 
     if (segments.length === 0) {
@@ -95,7 +93,7 @@ const Breadcrumb = () => {
           if (previousSegment === "writing-styles") {
             // This is a writing style ID
             try {
-              const result = await getWritingStyle(segment);
+              const result = await writingStylesAPI.getWritingStyle(segment);
               if (result.success && result.writingStyle) {
                 displayName = result.writingStyle.styleName;
               } else {
@@ -109,23 +107,13 @@ const Breadcrumb = () => {
             previousSegment === "samples" ||
             previousSegment === "generated"
           ) {
-            // This is a document ID - try both sample and generated documents
+            // This is a document ID - try to get the document
             try {
-              // Try sample document first
-              const sampleResult = await getSampleDocument(segment);
-              if (sampleResult.success && sampleResult.sampleDocument) {
-                displayName = sampleResult.sampleDocument.title;
+              const result = await documentsAPI.getDocument(segment);
+              if (result.success && result.document) {
+                displayName = result.document.title;
               } else {
-                // Try generated document
-                const generatedResult = await getGeneratedDocument(segment);
-                if (
-                  generatedResult.success &&
-                  generatedResult.generatedDocument
-                ) {
-                  displayName = generatedResult.generatedDocument.title;
-                } else {
-                  displayName = "Document";
-                }
+                displayName = "Document";
               }
             } catch {
               displayName = "Document";
@@ -151,7 +139,7 @@ const Breadcrumb = () => {
     }
 
     return breadcrumbs;
-  };
+  }, [pathname]);
 
   useEffect(() => {
     const fetchBreadcrumbs = async () => {
@@ -203,7 +191,7 @@ const Breadcrumb = () => {
     };
 
     fetchBreadcrumbs();
-  }, [pathname]);
+  }, [pathname, generateBreadcrumbs]);
 
   if (isLoading) {
     return (

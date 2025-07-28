@@ -1,14 +1,39 @@
 "use client";
-import React, { useState } from "react";
-import { DocumentsHeader } from "@/components/documents";
 import { LayoutMain, SkeletonLoading } from "@/components/ui";
+import { DocumentsHeader, DocumentsGrid } from "@/components/documents";
+import { documentsAPI } from "@/lib/api-client";
+import { useAuth } from "@/context/AuthContext";
+import React, { useEffect, useState } from "react";
+import { GeneratedDocument } from "@/lib/db-schemas";
 
 const Page = () => {
-  const [isLoading, setIsLoading] = useState(false); // This would be true when fetching documents
+  const { user } = useAuth();
+  const [documents, setDocuments] = useState<GeneratedDocument[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      if (!user?.id) return;
+
+      try {
+        setIsLoading(true);
+        const result = await documentsAPI.getAllDocuments();
+        if (result.success && result.documents) {
+          setDocuments(result.documents);
+        }
+      } catch (error) {
+        console.error("Error fetching documents:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDocuments();
+  }, [user?.id]);
 
   const handleSearch = (query: string) => {
-    // Handle search functionality here
-    console.log("Searching for:", query);
+    setSearchQuery(query);
   };
 
   return (
@@ -17,12 +42,7 @@ const Page = () => {
       {isLoading ? (
         <SkeletonLoading type="documents" />
       ) : (
-        <div className="px-42">
-          {/* Documents grid would go here */}
-          <div className="text-center text-gray-500 py-8">
-            Documents grid will be implemented here
-          </div>
-        </div>
+        <DocumentsGrid documents={documents} searchQuery={searchQuery} />
       )}
     </LayoutMain>
   );
