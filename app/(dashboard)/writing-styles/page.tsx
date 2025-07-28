@@ -4,7 +4,7 @@ import {
   WritingStylesHeader,
   WritingStylesGrid,
 } from "@/components/writing-styles";
-import { writingStylesAPI } from "@/lib/api-client";
+import { writingStylesAPI } from "@/lib/api-functions";
 import { useAuth } from "@/context/AuthContext";
 import React, { useEffect, useState } from "react";
 import { WritingStyle } from "@/lib/db-schemas";

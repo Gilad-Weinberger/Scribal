@@ -5,7 +5,7 @@ import { WritingStyle } from "@/lib/db-schemas";
 // GET /api/writing-styles/[id] - Get specific writing style
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createServerClient();
@@ -17,7 +17,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const writingStyleId = params.id;
+    const { id: writingStyleId } = await params;
 
     const { data, error } = await supabase
       .from("writing_styles")
@@ -82,7 +82,7 @@ export async function GET(
 // DELETE /api/writing-styles/[id] - Delete writing style
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createServerClient();
@@ -94,7 +94,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const writingStyleId = params.id;
+    const { id: writingStyleId } = await params;
 
     // Delete associated sample documents first
     const { error: sampleError } = await supabase

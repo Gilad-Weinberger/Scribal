@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { User } from "@/lib/db-schemas";
 import ProgressBar from "./ui/ProgressBar";
 import { useAuth } from "@/context/AuthContext";
-import { userAPI } from "@/lib/api-client";
+import { userAPI } from "@/lib/api-functions";
 
 import StepWelcome from "./steps/StepWelcome";
 import StepAcademicInfo from "./steps/StepAcademicInfo";

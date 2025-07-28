@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { authAPI } from "@/lib/api-client";
+import { authAPI } from "@/lib/api-functions";
 
 export default function Home() {
   const { user } = useAuth();

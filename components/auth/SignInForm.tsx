@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { authAPI } from "@/lib/api-client";
+import { authAPI } from "@/lib/api-functions";
 import AuthInput from "./AuthInput";
 import AuthButton from "./AuthButton";
 
@@ -19,10 +19,14 @@ export default function SignInForm() {
       if (result.success) {
         window.location.href = "/dashboard";
       } else {
-        window.location.href = `/auth/signin?error=${encodeURIComponent(result.error || "Sign in failed")}`;
+        window.location.href = `/auth/signin?error=${encodeURIComponent(
+          result.error || "Sign in failed"
+        )}`;
       }
     } catch (error) {
-      window.location.href = `/auth/signin?error=${encodeURIComponent("An unexpected error occurred")}`;
+      window.location.href = `/auth/signin?error=${encodeURIComponent(
+        "An unexpected error occurred"
+      )}`;
     }
   };
 

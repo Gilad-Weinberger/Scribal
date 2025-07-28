@@ -1,7 +1,7 @@
 "use client";
 import { LayoutMain, SkeletonLoading } from "@/components/ui";
 import { DocumentsHeader, DocumentsGrid } from "@/components/documents";
-import { documentsAPI } from "@/lib/api-client";
+import { documentsAPI } from "@/lib/api-functions";
 import { useAuth } from "@/context/AuthContext";
 import React, { useEffect, useState } from "react";
 import { GeneratedDocument } from "@/lib/db-schemas";
@@ -21,6 +21,9 @@ const Page = () => {
         const result = await documentsAPI.getAllDocuments();
         if (result.success && result.documents) {
           setDocuments(result.documents);
+        } else if (result.success && result.generatedDocuments) {
+          // Fallback for backward compatibility
+          setDocuments(result.generatedDocuments);
         }
       } catch (error) {
         console.error("Error fetching documents:", error);

@@ -220,7 +220,7 @@ export const clientHelpers = {
 
       const result = await documentsAPI.createDocument(data);
 
-      if (!result.success || !result.generatedDocument) {
+      if (!result.success || !result.document) {
         return {
           success: false,
           error: result.error || "Failed to create document",
@@ -229,7 +229,7 @@ export const clientHelpers = {
 
       return {
         success: true,
-        documentId: result.generatedDocument.id,
+        documentId: result.document.id,
       };
     } catch (error: unknown) {
       console.error("Error in processDocumentCreation:", error);

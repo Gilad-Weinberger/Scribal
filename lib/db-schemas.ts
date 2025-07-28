@@ -72,19 +72,6 @@ export interface GeneratedDocument {
   updatedAt: string; // ISO timestamp string
 }
 
-export interface DocumentSection {
-  id: string; // UUID
-  generatedDocumentId: string; // UUID
-  sectionType: "introduction" | "body_paragraph" | "conclusion";
-  sectionOrder: number;
-  content: string;
-  authenticityScore: number;
-  userEdited: boolean;
-  editCount: number;
-  createdAt: string; // ISO timestamp string
-  updatedAt: string; // ISO timestamp string
-}
-
 /*
  |-----------------------------------------------------------------------------
  | Supabase Database Types
@@ -270,44 +257,6 @@ export interface Database {
           updated_at?: string;
         };
       };
-      document_sections: {
-        Row: {
-          id: string;
-          generated_document_id: string;
-          section_type: string;
-          section_order: number;
-          content: string;
-          authenticity_score: number;
-          user_edited: boolean;
-          edit_count: number;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          generated_document_id: string;
-          section_type: string;
-          section_order: number;
-          content: string;
-          authenticity_score?: number;
-          user_edited?: boolean;
-          edit_count?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          generated_document_id?: string;
-          section_type?: string;
-          section_order?: number;
-          content?: string;
-          authenticity_score?: number;
-          user_edited?: boolean;
-          edit_count?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
     };
     Views: {
       [_ in never]: never;
@@ -353,10 +302,6 @@ export type SampleDocumentUpdate = Updates<"sample_documents">;
 export type GeneratedDocumentRow = Tables<"generated_documents">;
 export type GeneratedDocumentInsert = Inserts<"generated_documents">;
 export type GeneratedDocumentUpdate = Updates<"generated_documents">;
-
-export type DocumentSectionRow = Tables<"document_sections">;
-export type DocumentSectionInsert = Inserts<"document_sections">;
-export type DocumentSectionUpdate = Updates<"document_sections">;
 
 /*
  |-----------------------------------------------------------------------------

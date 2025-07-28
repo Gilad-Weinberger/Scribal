@@ -84,19 +84,7 @@ CREATE TABLE public.generated_documents (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- Document sections for granular editing and authenticity tracking
-CREATE TABLE public.document_sections (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    generated_document_id UUID NOT NULL REFERENCES public.generated_documents(id) ON DELETE CASCADE,
-    section_type TEXT NOT NULL, -- introduction, body_paragraph, conclusion
-    section_order INTEGER NOT NULL,
-    content TEXT NOT NULL,
-    authenticity_score DECIMAL(3,2) DEFAULT 0.00,
-    user_edited BOOLEAN DEFAULT FALSE,
-    edit_count INTEGER DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
-);
+
 
 -- =====================================================
 -- Triggers
@@ -116,7 +104,7 @@ CREATE TRIGGER users_updated_at BEFORE UPDATE ON public.users FOR EACH ROW EXECU
 CREATE TRIGGER writing_styles_updated_at BEFORE UPDATE ON public.writing_styles FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER sample_documents_updated_at BEFORE UPDATE ON public.sample_documents FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER generated_documents_updated_at BEFORE UPDATE ON public.generated_documents FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
-CREATE TRIGGER document_sections_updated_at BEFORE UPDATE ON public.document_sections FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
 
 -- =====================================================
 -- Row Level Security (RLS)
@@ -127,7 +115,7 @@ ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.writing_styles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sample_documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.generated_documents ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.document_sections ENABLE ROW LEVEL SECURITY;
+
 
 -- Policies for users table
 CREATE POLICY "Users can view own data" ON public.users FOR SELECT USING (auth.uid() = id);
@@ -144,14 +132,7 @@ CREATE POLICY "Users can manage their own sample documents" ON public.sample_doc
 -- Policies for generated_documents table
 CREATE POLICY "Users can manage their own generated documents" ON public.generated_documents FOR ALL USING (auth.uid() = user_id);
 
--- Policies for document_sections table
-CREATE POLICY "Users can manage sections of their own documents" ON public.document_sections
-  FOR ALL
-  USING (
-    auth.uid() = (
-      SELECT user_id FROM public.generated_documents WHERE id = generated_document_id
-    )
-  );
+
 
 
 -- =====================================================
@@ -182,4 +163,4 @@ CREATE INDEX idx_sample_documents_user_id ON sample_documents(user_id);
 CREATE INDEX idx_sample_documents_writing_style_id ON sample_documents(writing_style_id);
 CREATE INDEX idx_generated_documents_user_id ON generated_documents(user_id);
 CREATE INDEX idx_generated_documents_created_at ON generated_documents(created_at DESC);
-CREATE INDEX idx_document_sections_generated_document_id ON document_sections(generated_document_id); 
+ 

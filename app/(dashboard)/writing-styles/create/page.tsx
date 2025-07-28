@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LayoutNavbar } from "@/components/ui";
 import CreateWritingStyleForm from "@/components/writing-styles/create/CreateWritingStyleForm";
-import { clientHelpers } from "@/lib/api-client";
+import { clientHelpers } from "@/lib/api-functions";
 import { useAuth } from "@/context/AuthContext";
 
 const Page = () => {

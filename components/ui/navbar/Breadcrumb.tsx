@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { writingStylesAPI, documentsAPI } from "@/lib/api-client";
+import { writingStylesAPI, documentsAPI } from "@/lib/api-functions";
 
 const LogoIcon = () => (
   <svg

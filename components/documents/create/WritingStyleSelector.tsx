@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { writingStylesAPI } from "@/lib/api-client";
+import { writingStylesAPI } from "@/lib/api-functions";
 
 interface ToneAnalysis {
   formality?: string;

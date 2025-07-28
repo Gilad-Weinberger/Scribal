@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LayoutNavbar } from "@/components/ui";
 import CreateDocumentForm from "@/components/documents/create/CreateDocumentForm";
-import { clientHelpers, documentsAPI } from "@/lib/api-client";
+import { clientHelpers, documentsAPI } from "@/lib/api-functions";
 import { useAuth } from "@/context/AuthContext";
 
 const Page = () => {

@@ -5,7 +5,7 @@ import { GeneratedDocument, SampleDocument } from "@/lib/db-schemas";
 // GET /api/documents/[id] - Get specific document
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createServerClient();
@@ -17,7 +17,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const documentId = params.id;
+    const { id: documentId } = await params;
 
     // Try to get generated document first
     const { data: generatedData, error: generatedError } = await supabase
@@ -129,7 +129,7 @@ export async function GET(
 // PUT /api/documents/[id] - Update document (e.g., toggle favorite)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createServerClient();
@@ -141,7 +141,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const documentId = params.id;
+    const { id: documentId } = await params;
     const { isFavorite } = await request.json();
 
     const { error } = await supabase
@@ -178,7 +178,7 @@ export async function PUT(
 // DELETE /api/documents/[id] - Delete document
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createServerClient();
@@ -190,7 +190,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const documentId = params.id;
+    const { id: documentId } = await params;
 
     // Try to delete generated document first
     const { error: generatedError } = await supabase

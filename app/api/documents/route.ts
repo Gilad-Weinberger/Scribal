@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
-import { GeneratedDocument } from "@/lib/db-schemas";
+import { GeneratedDocument, WritingStyle, User } from "@/lib/db-schemas";
+import { buildGeminiPrompt } from "@/lib/gemini-prompt-builder";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+// Initialize Gemini AI
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 // GET /api/documents - Get all user documents
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createServerClient();
     const {
@@ -56,7 +61,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      generatedDocuments,
+      documents: generatedDocuments,
     });
   } catch (error: unknown) {
     return NextResponse.json(
@@ -148,24 +153,79 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Generate content (simplified for API route)
-    const generatedContent = `Based on your prompt: "${prompt.trim()}"
+    // Get user data for personal information replacement
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", user.id)
+      .single();
 
-${requirements ? `Requirements: ${requirements.trim()}` : ""}
+    let userInfo: User | undefined = undefined;
+    if (!userError && userData) {
+      userInfo = {
+        id: userData.id,
+        email: userData.email,
+        displayName: userData.display_name,
+        role: userData.role,
+        university: userData.university,
+        major: userData.major,
+        profilePictureUrl: userData.profile_picture_url,
+        defaultWritingStyle: userData.default_writing_style,
+        createdAt: userData.created_at,
+        updatedAt: userData.updated_at,
+      };
+    }
 
-Here is your generated document:
+    // Get writing style details if available
+    let writingStyle: WritingStyle | null = null;
+    if (finalWritingStyleId) {
+      const { data: styleData } = await supabase
+        .from("writing_styles")
+        .select("*")
+        .eq("id", finalWritingStyleId)
+        .single();
 
-# ${prompt.split(" ").slice(0, 5).join(" ")}...
+      if (styleData) {
+        writingStyle = {
+          id: styleData.id,
+          userId: styleData.user_id,
+          styleName: styleData.style_name,
+          vocabularyLevel: styleData.vocabulary_level,
+          avgSentenceLength: styleData.avg_sentence_length,
+          complexityScore: styleData.complexity_score,
+          toneAnalysis: styleData.tone_analysis,
+          writingPatterns: styleData.writing_patterns,
+          samplePhrases: styleData.sample_phrases,
+          authenticityBaseline: styleData.authenticity_baseline,
+          createdAt: styleData.created_at,
+          updatedAt: styleData.updated_at,
+        };
+      }
+    }
 
-This document has been generated using your personal writing style. The content follows your unique vocabulary patterns, sentence structure, and tone preferences to ensure authenticity and consistency with your writing voice.
+    // Build Gemini prompt
+    const geminiPrompt = buildGeminiPrompt({
+      userPrompt: prompt.trim(),
+      writingStyle: writingStyle || undefined,
+      requirements: requirements?.trim(),
+      user: userInfo,
+    });
 
-## Key Features:
-- Personalized content generation
-- Style-consistent writing
-- Authenticity scoring
-- Word count optimization
+    // Generate content using Gemini AI
+    let generatedContent = "";
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent(geminiPrompt);
+      const response = await result.response;
+      generatedContent = response.text();
+    } catch (error) {
+      console.error("Error calling Gemini API:", error);
+      // Fallback content if Gemini fails
+      generatedContent = `I apologize, but I'm unable to generate personalized content at the moment. Please try again later.
 
-The document maintains your writing DNA while addressing the specific requirements and prompt you provided.`;
+Your request was: ${prompt.trim()}
+${requirements ? `Requirements: ${requirements.trim()}` : ""}`;
+    }
 
     const wordCount = generatedContent.split(/\s+/).length;
 
@@ -241,7 +301,7 @@ The document maintains your writing DNA while addressing the specific requiremen
 
     return NextResponse.json({
       success: true,
-      generatedDocument,
+      document: generatedDocument,
     });
   } catch (error: unknown) {
     console.error("Unexpected error in createGeneratedDocument:", error);

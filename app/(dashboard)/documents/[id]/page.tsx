@@ -2,7 +2,7 @@
 
 import { LayoutMain } from "@/components/ui";
 import DocumentDetail from "@/components/documents/id/DocumentDetail";
-import { documentsAPI } from "@/lib/api-client";
+import { documentsAPI } from "@/lib/api-functions";
 import React, { useEffect, useState } from "react";
 import { GeneratedDocument } from "@/lib/db-schemas";
 import { useParams } from "next/navigation";

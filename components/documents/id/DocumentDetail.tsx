@@ -116,9 +116,9 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
             </h2>
             <div className="prose max-w-none">
               <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-primary">
-                <p className="text-gray-700 whitespace-pre-wrap">
+                <div className="text-gray-700 whitespace-pre-wrap">
                   {document.generatedContent}
-                </p>
+                </div>
               </div>
             </div>
           </div>
