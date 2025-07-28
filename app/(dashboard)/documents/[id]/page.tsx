@@ -1,7 +1,6 @@
 "use client";
 
-import { LayoutMain } from "@/components/ui";
-import DocumentDetail from "@/components/documents/id/DocumentDetail";
+import { DocumentText, LayoutDocument } from "@/components/documents/id";
 import { documentsAPI } from "@/lib/api-functions";
 import React, { useEffect, useState } from "react";
 import { GeneratedDocument } from "@/lib/db-schemas";
@@ -43,19 +42,37 @@ const Page = () => {
     fetchDocument();
   }, [params.id]);
 
+  // Create a dummy document for loading/error states
+  const dummyDocument: GeneratedDocument = {
+    id: "",
+    userId: "",
+    writingStyleId: null,
+    title: "Loading...",
+    prompt: "",
+    requirements: null,
+    generatedContent: "",
+    wordCount: 0,
+    authenticityScore: 0,
+    generationTimeMs: null,
+    status: "generating",
+    isFavorite: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
   if (isLoading) {
     return (
-      <LayoutMain>
+      <LayoutDocument document={dummyDocument}>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-      </LayoutMain>
+      </LayoutDocument>
     );
   }
 
   if (error || !document) {
     return (
-      <LayoutMain>
+      <LayoutDocument document={dummyDocument}>
         <div className="flex flex-col items-center justify-center min-h-[400px] px-4">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
             <svg
@@ -86,14 +103,14 @@ const Page = () => {
             Back to Documents
           </Link>
         </div>
-      </LayoutMain>
+      </LayoutDocument>
     );
   }
 
   return (
-    <LayoutMain>
-      <DocumentDetail document={document} />
-    </LayoutMain>
+    <LayoutDocument document={document}>
+      <DocumentText document={document} />
+    </LayoutDocument>
   );
 };
 
