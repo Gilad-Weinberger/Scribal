@@ -1,9 +1,12 @@
+import { Suspense } from "react";
 import { AuthCard, SignInForm } from "@/components/auth";
 
 export default function SignInPage() {
   return (
     <AuthCard>
-      <SignInForm />
+      <Suspense fallback={<div>Loading...</div>}>
+        <SignInForm />
+      </Suspense>
     </AuthCard>
   );
 }

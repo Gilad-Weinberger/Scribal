@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 
 const OnboardingPage = () => {
@@ -11,7 +11,9 @@ const OnboardingPage = () => {
         <p className="text-center text-gray-600">
           Let&apos;s get your profile set up.
         </p>
-        <OnboardingFlow />
+        <Suspense fallback={<div>Loading...</div>}>
+          <OnboardingFlow />
+        </Suspense>
       </div>
     </div>
   );

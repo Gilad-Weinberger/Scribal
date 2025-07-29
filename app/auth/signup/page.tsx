@@ -1,9 +1,12 @@
+import { Suspense } from "react";
 import { AuthCard, SignUpForm } from "@/components/auth";
 
 export default function SignUpPage() {
   return (
     <AuthCard>
-      <SignUpForm />
+      <Suspense fallback={<div>Loading...</div>}>
+        <SignUpForm />
+      </Suspense>
     </AuthCard>
   );
 }
