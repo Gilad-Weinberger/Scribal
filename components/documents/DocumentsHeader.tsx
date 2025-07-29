@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 
 interface DocumentsHeaderProps {
   onSearch?: (query: string) => void;
+  onCreateDocument?: () => void;
 }
 
-const DocumentsHeader: React.FC<DocumentsHeaderProps> = ({ onSearch }) => {
+const DocumentsHeader: React.FC<DocumentsHeaderProps> = ({ onSearch, onCreateDocument }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -16,14 +16,23 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = ({ onSearch }) => {
     onSearch?.(query);
   };
 
+  const handleCreateDocumentClick = () => {
+    if (onCreateDocument) {
+      onCreateDocument();
+    } else {
+      // Fallback to direct navigation if no handler provided
+      window.location.href = "/documents/create";
+    }
+  };
+
   return (
     <div className="px-42 py-18 pb-8 flex items-center gap-x-1">
-      <Link
+      <button
         className="bg-primary cursor-pointer text-sm text-white px-4 py-2 rounded-md hover:bg-primary-hover transition-colors"
-        href="/documents/create"
+        onClick={handleCreateDocumentClick}
       >
         <p>New Document</p>
-      </Link>
+      </button>
       <input
         type="text"
         placeholder="Search documents..."

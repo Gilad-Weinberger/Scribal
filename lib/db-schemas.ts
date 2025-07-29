@@ -68,6 +68,7 @@ export interface GeneratedDocument {
   generationTimeMs: number | null;
   status: "generating" | "completed" | "error";
   isFavorite: boolean;
+  isEdited: boolean;
   createdAt: string; // ISO timestamp string
   updatedAt: string; // ISO timestamp string
 }
@@ -221,6 +222,7 @@ export interface Database {
           generation_time_ms: number | null;
           status: string;
           is_favorite: boolean;
+          is_edited: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -237,6 +239,7 @@ export interface Database {
           generation_time_ms?: number | null;
           status?: string;
           is_favorite?: boolean;
+          is_edited?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -253,6 +256,7 @@ export interface Database {
           generation_time_ms?: number | null;
           status?: string;
           is_favorite?: boolean;
+          is_edited?: boolean;
           created_at?: string;
           updated_at?: string;
         };

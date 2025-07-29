@@ -41,6 +41,7 @@ export async function GET(
         generationTimeMs: generatedData.generation_time_ms,
         status: generatedData.status as "generating" | "completed" | "error",
         isFavorite: generatedData.is_favorite,
+        isEdited: generatedData.is_edited,
         createdAt: generatedData.created_at,
         updatedAt: generatedData.updated_at,
       };
@@ -126,7 +127,7 @@ export async function GET(
   }
 }
 
-// PUT /api/documents/[id] - Update document (e.g., toggle favorite)
+// PUT /api/documents/[id] - Update document (e.g., toggle favorite, save changes)
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -142,27 +143,96 @@ export async function PUT(
     }
 
     const { id: documentId } = await params;
-    const { isFavorite } = await request.json();
+    const body = await request.json();
 
-    const { error } = await supabase
-      .from("generated_documents")
-      .update({ is_favorite: isFavorite })
-      .eq("id", documentId)
-      .eq("user_id", user.id);
+    // Handle different update types
+    if (body.type === "save_changes") {
+      // Save document changes (title and content)
+      const { title, content } = body;
+      const wordCount = content
+        .split(/\s+/)
+        .filter((word: string) => word.length > 0).length;
 
-    if (error) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: error.message || "Failed to update document",
-        },
-        { status: 500 }
-      );
+      // Get the original document to compare changes
+      const { data: originalDocument, error: fetchError } = await supabase
+        .from("generated_documents")
+        .select("title, generated_content")
+        .eq("id", documentId)
+        .eq("user_id", user.id)
+        .eq("is_edited", false)
+        .single();
+
+      if (fetchError) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: fetchError.message || "Failed to fetch original document",
+          },
+          { status: 500 }
+        );
+      }
+
+      // Check if content or title has actually changed
+      let hasChanged = false;
+      if (originalDocument) {
+        const hasContentChanged =
+          originalDocument.generated_content !== content;
+        const hasTitleChanged = originalDocument.title !== title;
+        hasChanged = hasContentChanged || hasTitleChanged;
+      } else {
+        hasChanged = true;
+      }
+
+      const { error } = await supabase
+        .from("generated_documents")
+        .update({
+          title: title,
+          generated_content: content,
+          word_count: wordCount,
+          is_edited: hasChanged,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", documentId)
+        .eq("user_id", user.id);
+
+      if (error) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: error.message || "Failed to save document changes",
+          },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: "Document saved successfully",
+      });
+    } else {
+      // Handle favorite toggle (existing functionality)
+      const { isFavorite } = body;
+
+      const { error } = await supabase
+        .from("generated_documents")
+        .update({ is_favorite: isFavorite })
+        .eq("id", documentId)
+        .eq("user_id", user.id);
+
+      if (error) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: error.message || "Failed to update document",
+          },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+      });
     }
-
-    return NextResponse.json({
-      success: true,
-    });
   } catch (error: unknown) {
     return NextResponse.json(
       {

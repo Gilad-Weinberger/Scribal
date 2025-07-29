@@ -1,7 +1,12 @@
 import React from "react";
+import ProtectedRoute from "@/components/ui/ProtectedRoute";
 
 const page = () => {
-  return <div>page</div>;
+  return (
+    <ProtectedRoute>
+      <div>page</div>
+    </ProtectedRoute>
+  );
 };
 
 export default page;

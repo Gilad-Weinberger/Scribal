@@ -35,7 +35,7 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ document }) => {
   };
 
   return (
-    <div className="flex flex-col fixed left-14 top-12 w-60 h-[calc(100vh-3rem)] bg-background-secondary">
+    <div className="flex flex-col  left-14 top-12 w-60 h-[calc(100vh-3rem)] bg-background-secondary">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <h3 className="text-base font-bold text-gray-900 truncate">

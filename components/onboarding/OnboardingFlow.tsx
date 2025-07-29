@@ -17,7 +17,7 @@ const OnboardingFlow = () => {
   const [userData, setUserData] = useState<Partial<User>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user, completeOnboarding } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -107,8 +107,11 @@ const OnboardingFlow = () => {
       const sanitized = getSanitizedUserData();
       const result = await userAPI.updateUser(sanitized);
       if (result.success) {
-        completeOnboarding();
-        router.push("/dashboard");
+        // Redirect back to the original page if specified, otherwise go to dashboard
+        const returnTo = searchParams.get("returnTo");
+        const redirectPath =
+          returnTo && returnTo !== "/onboarding" ? returnTo : "/dashboard";
+        router.push(redirectPath);
       } else {
         setError(result.error || "An unknown error occurred.");
       }

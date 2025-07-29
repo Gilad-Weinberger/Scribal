@@ -20,7 +20,7 @@ export default function LayoutDocument({
         <Sidebar />
         <div className="flex flex-1 pt-12 pl-14 min-w-full bg-background-secondary">
           <DocumentSidebar document={document} />
-          <div className="flex-1 pl-60">{children}</div>
+          <div className="flex-1">{children}</div>
         </div>
       </div>
     </div>

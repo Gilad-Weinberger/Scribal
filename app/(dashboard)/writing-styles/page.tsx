@@ -8,6 +8,7 @@ import { writingStylesAPI } from "@/lib/api-functions";
 import { useAuth } from "@/context/AuthContext";
 import React, { useEffect, useState } from "react";
 import { WritingStyle } from "@/lib/db-schemas";
+import ProtectedRoute from "@/components/ui/ProtectedRoute";
 
 const Page = () => {
   const { user } = useAuth();
@@ -40,17 +41,19 @@ const Page = () => {
   };
 
   return (
-    <LayoutMain>
-      <WritingStylesHeader onSearch={handleSearch} />
-      {isLoading ? (
-        <SkeletonLoading type="writing-styles" />
-      ) : (
-        <WritingStylesGrid
-          writingStyles={writingStyles}
-          searchQuery={searchQuery}
-        />
-      )}
-    </LayoutMain>
+    <ProtectedRoute>
+      <LayoutMain>
+        <WritingStylesHeader onSearch={handleSearch} />
+        {isLoading ? (
+          <SkeletonLoading type="writing-styles" />
+        ) : (
+          <WritingStylesGrid
+            writingStyles={writingStyles}
+            searchQuery={searchQuery}
+          />
+        )}
+      </LayoutMain>
+    </ProtectedRoute>
   );
 };
 

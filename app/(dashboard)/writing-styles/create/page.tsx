@@ -6,6 +6,7 @@ import { LayoutNavbar } from "@/components/ui";
 import CreateWritingStyleForm from "@/components/writing-styles/create/CreateWritingStyleForm";
 import { clientHelpers } from "@/lib/api-functions";
 import { useAuth } from "@/context/AuthContext";
+import ProtectedRoute from "@/components/ui/ProtectedRoute";
 
 const Page = () => {
   const router = useRouter();
@@ -43,13 +44,15 @@ const Page = () => {
   };
 
   return (
-    <LayoutNavbar>
-      <CreateWritingStyleForm
-        onSubmit={handleSubmit}
-        isLoading={isLoading}
-        error={error}
-      />
-    </LayoutNavbar>
+    <ProtectedRoute>
+      <LayoutNavbar>
+        <CreateWritingStyleForm
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
+          error={error}
+        />
+      </LayoutNavbar>
+    </ProtectedRoute>
   );
 };
 

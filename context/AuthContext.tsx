@@ -7,112 +7,108 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { Session } from "@supabase/supabase-js";
+import { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { User as AppUser } from "@/lib/db-schemas";
+import { User as AppUser, dbRowToUser } from "@/lib/db-schemas";
 import useRealtimeUser from "@/lib/hooks/useRealtimeUser";
-import { usePathname, useRouter } from "next/navigation";
 
 interface AuthContextType {
   user: AppUser | null;
   isLoading: boolean;
-  completeOnboarding: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const supabase = createClient();
-  const [session, setSession] = useState<Session | null>(null);
-  const [sessionLoading, setSessionLoading] = useState(true);
-  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
-  const router = useRouter();
-  const pathname = usePathname();
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [initialDbUser, setInitialDbUser] = useState<AppUser | null>(null);
+  const [dbUserLoading, setDbUserLoading] = useState(false);
 
-  const completeOnboarding = () => {
-    setOnboardingCompleted(true);
-  };
-
-  // Initial session fetch effect
+  // Initial user fetch effect
   useEffect(() => {
-    const getInitialSession = async () => {
+    const getInitialUser = async () => {
       try {
         const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        setSession(session);
+          data: { user },
+        } = await supabase.auth.getUser();
+        setAuthUser(user);
       } catch (error) {
-        console.error("Error fetching initial session:", error);
+        console.error("Error fetching initial user:", error);
       } finally {
-        setSessionLoading(false);
+        setAuthLoading(false);
       }
     };
 
-    getInitialSession();
+    getInitialUser();
   }, [supabase]);
 
-  // Auth state change effect (session)
+  // Auth state change effect
   useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setSessionLoading(false);
+      setAuthUser(session?.user || null);
+      setAuthLoading(false);
     });
     return () => {
       subscription.unsubscribe();
     };
   }, [supabase]);
 
-  // Realtime user hook
-  const { user, isLoading: userLoading } = useRealtimeUser(
-    session?.user?.id || null
+  // Fetch initial database user when supabase user is available
+  useEffect(() => {
+    if (!authUser?.id) {
+      setInitialDbUser(null);
+      setDbUserLoading(false);
+      return;
+    }
+
+    setDbUserLoading(true);
+
+    const fetchDbUser = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", authUser.id)
+          .single();
+
+        if (error) {
+          console.error("Error fetching database user:", error);
+          setInitialDbUser(null);
+        } else if (data) {
+          setInitialDbUser(dbRowToUser(data));
+        } else {
+          setInitialDbUser(null);
+        }
+      } catch (error) {
+        console.error("Error fetching database user:", error);
+        setInitialDbUser(null);
+      } finally {
+        setDbUserLoading(false);
+      }
+    };
+
+    fetchDbUser();
+  }, [authUser?.id, supabase]);
+
+  // Use realtime user hook for updates, with initial user from AuthContext
+  const { user: realtimeUser } = useRealtimeUser(
+    authUser?.id || null,
+    initialDbUser
   );
 
-  console.log("user", user);
+  // Use realtime user if available, otherwise use initial user
+  const user = realtimeUser || initialDbUser;
 
-  // Combined loading state - only consider loading if we have a session but user is still loading
-  const isLoading = sessionLoading || (!!session && userLoading);
-
-  useEffect(() => {
-    if (isLoading || onboardingCompleted) return;
-
-    const isAuthPage = pathname.startsWith("/auth");
-    const isHomePage = pathname === "/";
-    const isOnboardingPage = pathname.startsWith("/onboarding");
-
-    // Only redirect if there's no session AND we're not on an allowed page
-    if (!session && !isAuthPage && !isHomePage && !isOnboardingPage) {
-      router.push("/auth/signin");
-    }
-  }, [session, isLoading, pathname, router, onboardingCompleted]);
-
-  useEffect(() => {
-    if (!isLoading && user) {
-      const isOnboardingPage = pathname.startsWith("/onboarding");
-      const missingFields: string[] = [];
-
-      if (!user.displayName) {
-        missingFields.push("displayName");
-      }
-      if (!user.university || !user.major) {
-        missingFields.push("academicInfo");
-      }
-      if (!user.profilePictureUrl) {
-        missingFields.push("profilePicture");
-      }
-
-      if (missingFields.length > 0 && !isOnboardingPage) {
-        const queryString = new URLSearchParams({
-          missing: missingFields.join(","),
-        }).toString();
-        router.push(`/onboarding?${queryString}`);
-      }
-    }
-  }, [user, isLoading, pathname, router, onboardingCompleted]);
+  // Combined loading state - keep loading until we have definitive user state
+  const isLoading =
+    authLoading || dbUserLoading || (authUser !== null && !user);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, completeOnboarding }}>
+    <AuthContext.Provider value={{ user, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

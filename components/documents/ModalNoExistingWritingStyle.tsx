@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 type ModalNoExistingWritingStyleProps = {
@@ -8,6 +8,13 @@ type ModalNoExistingWritingStyleProps = {
 const ModalNoExistingWritingStyle = ({
   onClose,
 }: ModalNoExistingWritingStyleProps) => {
+  const router = useRouter();
+
+  const handleCreateWritingStyle = () => {
+    onClose();
+    router.push("/writing-styles");
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-10">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md relative">
@@ -25,12 +32,12 @@ const ModalNoExistingWritingStyle = ({
           >
             Cancel
           </button>
-          <Link
+          <button
             className="bg-primary text-sm text-white border-2 border-border-default cursor-pointer px-3 py-1 rounded-md hover:bg-primary-hover transition-colors"
-            href="/writing-styles"
+            onClick={handleCreateWritingStyle}
           >
             Create Writing Style
-          </Link>
+          </button>
         </div>
       </div>
     </div>

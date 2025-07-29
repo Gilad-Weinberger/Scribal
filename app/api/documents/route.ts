@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { GeneratedDocument, WritingStyle, User } from "@/lib/db-schemas";
-import { buildGeminiPrompt } from "@/lib/gemini-prompt-builder";
+import { buildAIPrompt } from "@/lib/ai-prompt-builder";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Gemini AI
@@ -55,6 +55,7 @@ export async function GET() {
       generationTimeMs: row.generation_time_ms,
       status: row.status as "generating" | "completed" | "error",
       isFavorite: row.is_favorite,
+      isEdited: row.is_edited,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     }));
@@ -204,7 +205,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Build Gemini prompt
-    const geminiPrompt = buildGeminiPrompt({
+    const geminiPrompt = buildAIPrompt({
       userPrompt: prompt.trim(),
       writingStyle: writingStyle || undefined,
       requirements: requirements?.trim(),
@@ -295,6 +296,7 @@ ${requirements ? `Requirements: ${requirements.trim()}` : ""}`;
       generationTimeMs: data.generation_time_ms,
       status: data.status as "generating" | "completed" | "error",
       isFavorite: data.is_favorite,
+      isEdited: false,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     };
