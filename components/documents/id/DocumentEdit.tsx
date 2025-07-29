@@ -3,6 +3,7 @@
 import { GeneratedDocument } from "@/lib/db-schemas";
 import React, { useState, useEffect } from "react";
 import { FastWritingAnimation } from ".";
+import { useToast } from "@/components/ui";
 
 interface DocumentEditProps {
   document: GeneratedDocument;
@@ -12,8 +13,8 @@ const DocumentEdit = ({ document }: DocumentEditProps) => {
   const [content, setContent] = useState(document.generatedContent || "");
   const [title, setTitle] = useState(document.title || "");
   const [isSaving, setIsSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState("");
   const [showWritingAnimation, setShowWritingAnimation] = useState(false);
+  const { showToast } = useToast();
 
   // Check if document was created within the last 45 seconds
   useEffect(() => {
@@ -47,7 +48,6 @@ const DocumentEdit = ({ document }: DocumentEditProps) => {
 
   const handleSaveChanges = async () => {
     setIsSaving(true);
-    setSaveMessage("");
 
     try {
       const response = await fetch(`/api/documents/${document.id}`, {
@@ -65,15 +65,12 @@ const DocumentEdit = ({ document }: DocumentEditProps) => {
       const data = await response.json();
 
       if (data.success) {
-        setSaveMessage("Document saved successfully!");
-        setTimeout(() => setSaveMessage(""), 3000);
+        showToast("Document saved successfully!", "success");
       } else {
-        setSaveMessage("Failed to save document. Please try again.");
-        setTimeout(() => setSaveMessage(""), 5000);
+        showToast("Failed to save document. Please try again.", "error");
       }
     } catch {
-      setSaveMessage("An error occurred while saving. Please try again.");
-      setTimeout(() => setSaveMessage(""), 5000);
+      showToast("An error occurred while saving. Please try again.", "error");
     } finally {
       setIsSaving(false);
     }
@@ -144,17 +141,6 @@ const DocumentEdit = ({ document }: DocumentEditProps) => {
           <div className="border-b border-gray-200 px-8 py-3 bg-gray-50">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                {saveMessage && (
-                  <span
-                    className={`text-sm ${
-                      saveMessage.includes("successfully")
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {saveMessage}
-                  </span>
-                )}
                 {showWritingAnimation && (
                   <span className="text-sm text-blue-600 flex items-center gap-2">
                     <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>

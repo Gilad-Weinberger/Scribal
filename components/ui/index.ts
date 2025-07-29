@@ -5,4 +5,6 @@ export { default as Sidebar } from "./Sidebar";
 export { default as LoadingSpinner } from "./LoadingSpinner";
 export { default as SkeletonLoading } from "./SkeletonLoading";
 export { default as ProtectedRoute } from "./ProtectedRoute";
+export { default as Toast } from "./Toast";
+export { ToastProvider, useToast } from "./ToastProvider";
 export * from "./icons";
