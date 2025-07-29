@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
-import {
-  WritingStyle,
-  WritingStyleInsert,
-  SampleDocumentInsert,
-} from "@/lib/db-schemas";
+import { WritingStyle, WritingStyleInsert } from "@/lib/db-schemas";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import {
+  analyzeTextMetrics,
+  calculateStyleCharacteristics,
+  LinguisticMetrics,
+  StyleCharacteristics,
+} from "@/lib/functions/writing-style-analyzer";
+import { calculateAuthenticityScore } from "@/lib/functions/authenticity-calculator";
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -83,83 +86,113 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const formData = await request.formData();
-    const name = formData.get("name") as string;
-    const files = formData.getAll("files") as File[];
+    const { name, sampleDocuments } = await request.json();
 
-    if (!name?.trim()) {
+    if (!name || !sampleDocuments || sampleDocuments.length === 0) {
       return NextResponse.json(
         {
           success: false,
-          error: "Please provide a name for your writing style",
+          error: "Name and sample documents are required",
         },
         { status: 400 }
       );
     }
 
-    if (!files || files.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Please upload at least one .txt file",
-        },
-        { status: 400 }
-      );
-    }
+    // Combine all sample document content for analysis
+    const combinedContent = sampleDocuments
+      .map((doc: { content: string }) => doc.content)
+      .join("\n\n");
 
-    // Validate file types
-    for (const file of files) {
-      if (!file.name.toLowerCase().endsWith(".txt")) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `File "${file.name}" is not a .txt file. Please upload only .txt files.`,
-          },
-          { status: 400 }
-        );
-      }
-    }
+    // Use the new specific linguistic analysis
+    const linguisticMetrics = analyzeTextMetrics(combinedContent);
+    const styleCharacteristics =
+      calculateStyleCharacteristics(linguisticMetrics);
 
-    // Read and combine all file contents
-    let combinedContent = "";
-    const fileNames: string[] = [];
-    const fileSizes: number[] = [];
-
-    for (const file of files) {
-      const content = await file.text();
-      combinedContent += content + "\n\n";
-      fileNames.push(file.name);
-      fileSizes.push(file.size);
-    }
-
-    // Trim the combined content
-    combinedContent = combinedContent.trim();
-
-    if (combinedContent.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "The uploaded files contain no text content",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Analyze the writing style using Gemini AI
-    const analysis = await analyzeWritingStyle(combinedContent);
+    // Calculate authenticity using the PBA Scale
+    const authenticityMetrics = calculateAuthenticityScore({
+      vocabularyDiversity: linguisticMetrics.typeTokenRatio,
+      sentenceComplexity: linguisticMetrics.sentenceComplexity,
+      readabilityScore: linguisticMetrics.fleschKincaidGrade,
+      formalityLevel: styleCharacteristics.formalityLevel,
+      emotionalTone: styleCharacteristics.emotionalTone,
+      engagementLevel: styleCharacteristics.engagementLevel,
+      personalPronouns: linguisticMetrics.personalPronouns,
+      hedgingLanguage: linguisticMetrics.hedgingLanguage,
+      confidenceMarkers: linguisticMetrics.confidenceMarkers,
+    });
 
     const now = new Date().toISOString();
 
     // Validate all numeric values to prevent overflow
     const validatedAnalysis = {
-      vocabularyLevel: Math.max(1, Math.min(10, analysis.vocabularyLevel)),
+      vocabularyLevel: Math.max(
+        1,
+        Math.min(
+          10,
+          Math.round(styleCharacteristics.lexicalSophistication / 10)
+        )
+      ),
       avgSentenceLength: Math.max(
         0,
-        Math.min(999.99, analysis.avgSentenceLength)
+        Math.min(999.99, linguisticMetrics.averageSentenceLength)
       ),
-      complexityScore: Math.max(0, Math.min(9.99, analysis.complexityScore)),
-      authenticityBaseline: Math.max(0, Math.min(100, 85)), // Default baseline - now supports 0-100
+      complexityScore: Math.max(
+        0,
+        Math.min(9.99, styleCharacteristics.syntacticComplexity / 10)
+      ),
+      authenticityBaseline: Math.max(
+        0,
+        Math.min(100, Math.round(authenticityMetrics.overallAuthenticity))
+      ),
     };
+
+    // Enhanced tone analysis with specific metrics
+    const enhancedToneAnalysis = {
+      formality: getFormalityDescription(styleCharacteristics.formalityLevel),
+      emotion: getEmotionalToneDescription(styleCharacteristics.emotionalTone),
+      confidence: getConfidenceDescription(
+        styleCharacteristics.engagementLevel
+      ),
+      engagement: getEngagementDescription(
+        styleCharacteristics.engagementLevel
+      ),
+      academicTone: getAcademicToneDescription(
+        styleCharacteristics.academicTone
+      ),
+      personalVoice: getPersonalVoiceDescription(
+        styleCharacteristics.personalVoice
+      ),
+    };
+
+    // Enhanced writing patterns with specific linguistic features
+    const enhancedWritingPatterns = {
+      sentenceStructure: getSentenceStructureDescription(
+        linguisticMetrics.sentenceComplexity
+      ),
+      paragraphLength: getParagraphLengthDescription(
+        linguisticMetrics.paragraphLength
+      ),
+      transitionWords: getTransitionWordsDescription(
+        linguisticMetrics.transitionWords
+      ),
+      passiveVoice: getPassiveVoiceDescription(linguisticMetrics.passiveVoice),
+      vocabularyDiversity: getVocabularyDiversityDescription(
+        linguisticMetrics.typeTokenRatio
+      ),
+      readabilityLevel: getReadabilityDescription(
+        linguisticMetrics.fleschKincaidGrade
+      ),
+      uniqueCharacteristics: generateUniqueCharacteristics(
+        linguisticMetrics,
+        styleCharacteristics
+      ),
+    };
+
+    // Generate sample phrases using AI
+    const samplePhrases = await generateSamplePhrases(
+      combinedContent,
+      enhancedToneAnalysis
+    );
 
     const newWritingStyle: WritingStyleInsert = {
       user_id: user.id,
@@ -167,9 +200,9 @@ export async function POST(request: NextRequest) {
       vocabulary_level: validatedAnalysis.vocabularyLevel,
       avg_sentence_length: validatedAnalysis.avgSentenceLength,
       complexity_score: validatedAnalysis.complexityScore,
-      tone_analysis: analysis.toneAnalysis,
-      writing_patterns: analysis.writingPatterns,
-      sample_phrases: analysis.samplePhrases,
+      tone_analysis: enhancedToneAnalysis,
+      writing_patterns: enhancedWritingPatterns,
+      sample_phrases: samplePhrases,
       authenticity_baseline: validatedAnalysis.authenticityBaseline,
       created_at: now,
       updated_at: now,
@@ -217,36 +250,17 @@ export async function POST(request: NextRequest) {
       updatedAt: data.updated_at,
     };
 
-    // Create sample document entries for each uploaded file
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const content = await file.text();
-
-      const wordCount = Math.min(content.split(/\s+/).length, 2147483647);
-      const validatedFileSize = Math.min(file.size, 2147483647);
-
-      const newSampleDocument: SampleDocumentInsert = {
-        user_id: user.id,
-        writing_style_id: writingStyle.id,
-        title: file.name.replace(".txt", ""),
-        content,
-        word_count: wordCount,
-        file_name: file.name,
-        file_size: validatedFileSize,
-        analysis_status: "completed",
-        analysis_results: null,
-        created_at: now,
-        updated_at: now,
-      };
-
-      await supabase.from("sample_documents").insert([newSampleDocument]);
-    }
-
     return NextResponse.json({
       success: true,
       writingStyle,
+      analysisDetails: {
+        linguisticMetrics,
+        styleCharacteristics,
+        authenticityMetrics,
+      },
     });
   } catch (error: unknown) {
+    console.error("Error creating writing style:", error);
     return NextResponse.json(
       {
         success: false,
@@ -260,112 +274,153 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * Analyzes text content using Gemini AI to extract writing style characteristics
- */
-const analyzeWritingStyle = async (
-  content: string
-): Promise<{
-  vocabularyLevel: number;
-  avgSentenceLength: number;
-  complexityScore: number;
+// Helper functions for generating descriptions based on specific metrics
+
+const getFormalityDescription = (level: number): string => {
+  if (level >= 80) return "Highly Formal";
+  if (level >= 60) return "Formal";
+  if (level >= 40) return "Semi-Formal";
+  if (level >= 20) return "Informal";
+  return "Very Informal";
+};
+
+const getEmotionalToneDescription = (tone: number): string => {
+  if (tone >= 60) return "Very Positive";
+  if (tone >= 20) return "Positive";
+  if (tone >= -20) return "Neutral";
+  if (tone >= -60) return "Negative";
+  return "Very Negative";
+};
+
+const getConfidenceDescription = (level: number): string => {
+  if (level >= 80) return "Very Confident";
+  if (level >= 60) return "Confident";
+  if (level >= 40) return "Moderate";
+  if (level >= 20) return "Cautious";
+  return "Uncertain";
+};
+
+const getEngagementDescription = (level: number): string => {
+  if (level >= 80) return "Highly Engaging";
+  if (level >= 60) return "Engaging";
+  if (level >= 40) return "Moderate";
+  if (level >= 20) return "Passive";
+  return "Very Passive";
+};
+
+const getAcademicToneDescription = (level: number): string => {
+  if (level >= 80) return "Highly Academic";
+  if (level >= 60) return "Academic";
+  if (level >= 40) return "Semi-Academic";
+  if (level >= 20) return "Conversational";
+  return "Very Conversational";
+};
+
+const getPersonalVoiceDescription = (level: number): string => {
+  if (level >= 80) return "Very Personal";
+  if (level >= 60) return "Personal";
+  if (level >= 40) return "Moderate";
+  if (level >= 20) return "Impersonal";
+  return "Very Impersonal";
+};
+
+const getSentenceStructureDescription = (complexity: number): string => {
+  if (complexity >= 3) return "Complex";
+  if (complexity >= 2) return "Compound";
+  if (complexity >= 1.5) return "Mixed";
+  return "Simple";
+};
+
+const getParagraphLengthDescription = (length: number): string => {
+  if (length >= 5) return "Long";
+  if (length >= 3) return "Medium";
+  return "Short";
+};
+
+const getTransitionWordsDescription = (percentage: number): string => {
+  if (percentage >= 5) return "Frequent";
+  if (percentage >= 2) return "Moderate";
+  return "Minimal";
+};
+
+const getPassiveVoiceDescription = (percentage: number): string => {
+  if (percentage >= 10) return "Frequent";
+  if (percentage >= 5) return "Moderate";
+  return "Minimal";
+};
+
+const getVocabularyDiversityDescription = (ratio: number): string => {
+  if (ratio >= 0.7) return "Very Diverse";
+  if (ratio >= 0.5) return "Diverse";
+  if (ratio >= 0.3) return "Moderate";
+  return "Limited";
+};
+
+const getReadabilityDescription = (grade: number): string => {
+  if (grade >= 16) return "Graduate Level";
+  if (grade >= 13) return "College Level";
+  if (grade >= 10) return "High School";
+  if (grade >= 7) return "Middle School";
+  return "Elementary";
+};
+
+const generateUniqueCharacteristics = (
+  metrics: LinguisticMetrics,
+  styleCharacteristics: StyleCharacteristics
+): string[] => {
+  const uniqueTraits: string[] = [];
+
+  if (metrics.personalPronouns > 5)
+    uniqueTraits.push("High personal pronoun usage");
+  if (metrics.passiveVoice < 5) uniqueTraits.push("Active voice preference");
+  if (metrics.transitionWords > 3)
+    uniqueTraits.push("Strong use of transitions");
+  if (styleCharacteristics.formalityLevel > 70)
+    uniqueTraits.push("Formal academic style");
+  if (styleCharacteristics.personalVoice > 70)
+    uniqueTraits.push("Personal and authentic voice");
+  if (metrics.typeTokenRatio > 0.6)
+    uniqueTraits.push("Rich vocabulary diversity");
+
+  return uniqueTraits.length > 0 ? uniqueTraits : ["Balanced writing style"];
+};
+
+const generateSamplePhrases = async (
+  content: string,
   toneAnalysis: {
     formality: string;
     emotion: string;
     confidence: string;
     engagement: string;
-  };
-  writingPatterns: {
-    sentenceStructure: string;
-    paragraphLength: string;
-    transitionWords: string[];
-    repetitivePhrases: string[];
-    uniqueCharacteristics: string[];
-  };
-  samplePhrases: string[];
-}> => {
+    academicTone: string;
+    personalVoice: string;
+  }
+): Promise<string[]> => {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
-    Analyze the following text and provide a comprehensive writing style analysis. Return your response as a JSON object with the following structure:
+    Based on the following writing style analysis, generate 3-5 sample phrases that capture the distinctive voice:
     
-    {
-      "vocabularyLevel": number (1-10, where 1 is basic and 10 is advanced),
-      "avgSentenceLength": number (average words per sentence, keep under 1000),
-      "complexityScore": number (1-10, based on sentence structure complexity),
-      "toneAnalysis": {
-        "formality": "formal" | "semi-formal" | "informal",
-        "emotion": "neutral" | "positive" | "negative" | "mixed",
-        "confidence": "high" | "medium" | "low",
-        "engagement": "high" | "medium" | "low"
-      },
-      "writingPatterns": {
-        "sentenceStructure": "simple" | "compound" | "complex" | "mixed",
-        "paragraphLength": "short" | "medium" | "long",
-        "transitionWords": string[],
-        "repetitivePhrases": string[],
-        "uniqueCharacteristics": string[]
-      },
-      "samplePhrases": string[] (3-5 representative phrases that capture the writing style)
-    }
+    Tone Analysis: ${JSON.stringify(toneAnalysis)}
     
-    Text to analyze:
-    ${content}
+    Original Content Sample: ${content.substring(0, 500)}...
     
-    Focus on identifying the unique characteristics that make this writing style distinctive. Be specific and detailed in your analysis.
+    Generate 3-5 representative phrases (10-20 words each) that demonstrate this writing style. 
+    Focus on capturing the unique voice characteristics and tone.
+    Return only the phrases, one per line, without numbering or additional text.
     `;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text();
+    const phrases = response
+      .text()
+      .split("\n")
+      .filter((phrase) => phrase.trim().length > 0);
 
-    // Extract JSON from the response
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error("Failed to parse AI response");
-    }
-
-    const analysis = JSON.parse(jsonMatch[0]);
-
-    // Validate and clamp numeric values to prevent overflow
-    const validatedAnalysis = {
-      vocabularyLevel: Math.max(1, Math.min(10, analysis.vocabularyLevel || 5)),
-      avgSentenceLength: Math.max(
-        0,
-        Math.min(999.99, analysis.avgSentenceLength || 15)
-      ),
-      complexityScore: Math.max(
-        0,
-        Math.min(9.99, analysis.complexityScore || 5)
-      ),
-      toneAnalysis: analysis.toneAnalysis || {},
-      writingPatterns: analysis.writingPatterns || {},
-      samplePhrases: analysis.samplePhrases || [],
-    };
-
-    return validatedAnalysis;
+    return phrases.slice(0, 5); // Return up to 5 phrases
   } catch (error) {
-    console.error("Error analyzing writing style:", error);
-    // Return default values if analysis fails
-    return {
-      vocabularyLevel: 5,
-      avgSentenceLength: 15,
-      complexityScore: 5,
-      toneAnalysis: {
-        formality: "semi-formal",
-        emotion: "neutral",
-        confidence: "medium",
-        engagement: "medium",
-      },
-      writingPatterns: {
-        sentenceStructure: "mixed",
-        paragraphLength: "medium",
-        transitionWords: [],
-        repetitivePhrases: [],
-        uniqueCharacteristics: [],
-      },
-      samplePhrases: [],
-    };
+    console.error("Error generating sample phrases:", error);
+    return ["Sample phrase generation unavailable"];
   }
 };

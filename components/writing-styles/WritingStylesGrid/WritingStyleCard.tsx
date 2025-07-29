@@ -3,41 +3,27 @@
 import React from "react";
 import Link from "next/link";
 import { WritingStyle } from "@/lib/db-schemas";
+import { getAuthenticityLevel } from "@/lib/functions/authenticity-calculator";
 
 interface WritingStyleCardProps {
   style: WritingStyle;
 }
 
-interface ToneAnalysis {
-  formality?: string;
-  emotion?: string;
-  confidence?: string;
-  engagement?: string;
-}
-
 const WritingStyleCard: React.FC<WritingStyleCardProps> = ({ style }) => {
-  const getToneColor = (tone: unknown) => {
-    if (!tone || typeof tone !== "object" || !tone || !("formality" in tone)) {
-      return "bg-gray-100 text-gray-700";
-    }
+  const authenticityLevel = getAuthenticityLevel(style.authenticityBaseline);
 
-    const formality = (tone as ToneAnalysis).formality;
-    switch (formality) {
-      case "formal":
-        return "bg-blue-100 text-blue-700";
-      case "semi-formal":
-        return "bg-purple-100 text-purple-700";
-      case "informal":
-        return "bg-green-100 text-green-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
+  const getComplexityDescription = (score: number): string => {
+    if (score >= 8) return "Advanced";
+    if (score >= 6) return "Intermediate";
+    if (score >= 4) return "Basic";
+    return "Simple";
   };
 
-  const getComplexityColor = (score: number) => {
-    if (score >= 7) return "text-red-600";
-    if (score >= 4) return "text-yellow-600";
-    return "text-green-600";
+  const getVocabularyDescription = (level: number): string => {
+    if (level >= 8) return "Sophisticated";
+    if (level >= 6) return "Varied";
+    if (level >= 4) return "Standard";
+    return "Basic";
   };
 
   return (
@@ -49,32 +35,24 @@ const WritingStyleCard: React.FC<WritingStyleCardProps> = ({ style }) => {
             <h3 className="text-base font-semibold text-gray-900 group-hover:text-primary transition-colors mb-2 truncate">
               {style.styleName}
             </h3>
-            <div className="flex items-center gap-2">
-              <span
-                className={`px-2 py-1 rounded-full text-xs font-medium ${getToneColor(
-                  style.toneAnalysis
-                )}`}
-              >
-                {(style.toneAnalysis as ToneAnalysis)?.formality || "Unknown"}
-              </span>
-              <span className="text-xs text-gray-500">
-                Vocab: {style.vocabularyLevel || 0}/10
-              </span>
-            </div>
           </div>
-          <div className="flex flex-col items-end">
-            <span
-              className={`text-sm font-semibold ${getComplexityColor(
-                style.complexityScore || 0
-              )}`}
-            >
-              {style.complexityScore || 0}/10
-            </span>
-            <span className="text-gray-400 text-xs">complexity</span>
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-end">
+              <span className="text-sm font-semibold">
+                {getComplexityDescription(style.complexityScore || 0)}
+              </span>
+              <span className="text-gray-400 text-xs">complexity</span>
+            </div>
+            <div className="flex flex-col items-end">
+              <span className="text-sm font-semibold">
+                {getVocabularyDescription(style.vocabularyLevel || 0)}
+              </span>
+              <span className="text-gray-400 text-xs">vocabulary</span>
+            </div>
           </div>
         </div>
 
-        {/* Key Metrics */}
+        {/* Key Metrics with Real-World Formulas */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="text-center p-2 bg-gray-50 rounded-lg">
             <div className="text-lg font-bold text-gray-900">
@@ -83,7 +61,7 @@ const WritingStyleCard: React.FC<WritingStyleCardProps> = ({ style }) => {
             <div className="text-xs text-gray-500">Avg. Length</div>
           </div>
           <div className="text-center p-2 bg-gray-50 rounded-lg">
-            <div className="text-lg font-bold text-gray-900">
+            <div className={`text-lg font-bold ${authenticityLevel.color}`}>
               {style.authenticityBaseline || 0}%
             </div>
             <div className="text-xs text-gray-500">Authenticity</div>
@@ -127,4 +105,4 @@ const WritingStyleCard: React.FC<WritingStyleCardProps> = ({ style }) => {
   );
 };
 
-export default WritingStyleCard; 
+export default WritingStyleCard;
