@@ -24,7 +24,7 @@ export default function SignUpForm() {
           result.error || "Sign up failed"
         )}`;
       }
-    } catch (error) {
+    } catch {
       window.location.href = `/auth/signup?error=${encodeURIComponent(
         "An unexpected error occurred"
       )}`;

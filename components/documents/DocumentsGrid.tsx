@@ -19,7 +19,7 @@ const DocumentsGrid: React.FC<DocumentsGridProps> = ({
 
   if (filteredDocuments.length === 0) {
     return <EmptyDocuments searchQuery={searchQuery} />;
-  }
+  } 
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-42">

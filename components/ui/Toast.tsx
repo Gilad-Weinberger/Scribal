@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 interface ToastProps {
   message: string;
@@ -13,6 +13,14 @@ const Toast = ({ message, type, duration = 3000, onClose }: ToastProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
+  const handleClose = useCallback(() => {
+    setIsLeaving(true);
+    setTimeout(() => {
+      setIsVisible(false);
+      onClose();
+    }, 300);
+  }, [onClose]);
+
   useEffect(() => {
     // Trigger animation on mount
     setTimeout(() => setIsVisible(true), 10);
@@ -23,15 +31,7 @@ const Toast = ({ message, type, duration = 3000, onClose }: ToastProps) => {
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [duration]);
-
-  const handleClose = () => {
-    setIsLeaving(true);
-    setTimeout(() => {
-      setIsVisible(false);
-      onClose();
-    }, 300);
-  };
+  }, [duration, handleClose]);
 
   const getIcon = () => {
     switch (type) {

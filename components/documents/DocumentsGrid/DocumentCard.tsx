@@ -1,26 +1,37 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { GeneratedDocument } from "@/lib/db-schemas";
+import { GeneratedDocument, WritingStyle } from "@/lib/db-schemas";
+import { writingStylesAPI } from "@/lib/api-functions";
 
 interface DocumentCardProps {
   document: GeneratedDocument;
 }
 
 const DocumentCard: React.FC<DocumentCardProps> = ({ document }) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-700";
-      case "generating":
-        return "bg-yellow-100 text-yellow-700";
-      case "error":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
+  const [writingStyle, setWritingStyle] = useState<WritingStyle | null>(null);
+
+  useEffect(() => {
+    const fetchWritingStyle = async () => {
+      if (!document.writingStyleId) {
+        return;
+      }
+
+      try {
+        const result = await writingStylesAPI.getWritingStyle(
+          document.writingStyleId
+        );
+        if (result.success && result.writingStyle) {
+          setWritingStyle(result.writingStyle);
+        }
+      } catch (error) {
+        console.error("Failed to fetch writing style:", error);
+      }
+    };
+
+    fetchWritingStyle();
+  }, [document.writingStyleId]);
 
   const getAuthenticityColor = (score: number) => {
     if (score >= 80) return "text-green-600";
@@ -37,28 +48,12 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ document }) => {
             <h3 className="text-base font-semibold text-gray-900 group-hover:text-primary transition-colors mb-2 truncate">
               {document.title}
             </h3>
-            <div className="flex items-center gap-2">
-              <span
-                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                  document.status
-                )}`}
-              >
-                {document.status}
-              </span>
-              <span className="text-xs text-gray-500">
-                {document.wordCount} words
-              </span>
-            </div>
           </div>
           <div className="flex flex-col items-end">
-            <span
-              className={`text-sm font-semibold ${getAuthenticityColor(
-                document.authenticityScore
-              )}`}
-            >
-              {document.authenticityScore}%
+            <span className="text-sm font-semibold text-primary">
+              {writingStyle?.styleName || "Default"}
             </span>
-            <span className="text-gray-400 text-xs">authenticity</span>
+            <span className="text-gray-400 text-xs">Writing style</span>
           </div>
         </div>
 
@@ -71,12 +66,14 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ document }) => {
             <div className="text-xs text-gray-500">Word Count</div>
           </div>
           <div className="text-center p-2 bg-gray-50 rounded-lg">
-            <div className="text-lg font-bold text-gray-900">
-              {document.generationTimeMs
-                ? `${Math.round(document.generationTimeMs / 1000)}s`
-                : "N/A"}
+            <div
+              className={`text-lg font-bold ${getAuthenticityColor(
+                document.authenticityScore
+              )}`}
+            >
+              {document.authenticityScore}%
             </div>
-            <div className="text-xs text-gray-500">Generation Time</div>
+            <div className="text-xs text-gray-500">Authenticity</div>
           </div>
         </div>
 

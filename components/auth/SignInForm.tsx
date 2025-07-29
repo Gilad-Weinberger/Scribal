@@ -23,7 +23,7 @@ export default function SignInForm() {
           result.error || "Sign in failed"
         )}`;
       }
-    } catch (error) {
+    } catch {
       window.location.href = `/auth/signin?error=${encodeURIComponent(
         "An unexpected error occurred"
       )}`;

@@ -31,7 +31,7 @@ const StepProfilePicture = ({ data, onUpdate }: StepProfilePictureProps) => {
         } else {
           setError(result.error || "Failed to upload image");
         }
-      } catch (error) {
+      } catch {
         setError("Failed to upload image");
       } finally {
         setIsUploading(false);

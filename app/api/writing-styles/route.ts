@@ -11,7 +11,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 // GET /api/writing-styles - Get all user writing styles
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createServerClient();
     const {
