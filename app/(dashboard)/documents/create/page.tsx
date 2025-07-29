@@ -40,21 +40,57 @@ const Page = () => {
     setIsLoading(true);
     setError(undefined);
 
+    // Add a timeout fallback to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.warn("Document creation is taking longer than expected...");
+      setError(
+        "Document creation is taking longer than expected. Please try again."
+      );
+      setIsLoading(false);
+    }, 30000); // 30 second timeout
+
     try {
+      console.log("Starting document creation...", data);
       const result = await clientHelpers.processDocumentCreation(data);
+      console.log("Document creation result:", result);
+
+      // Clear the timeout since we got a response
+      clearTimeout(timeoutId);
 
       if (result.success && result.documentId) {
-        // Show success message briefly before redirecting
+        console.log(
+          "Attempting to navigate to:",
+          `/documents/${result.documentId}`
+        );
+        // Add a small delay to ensure the user sees the completion
         setTimeout(() => {
-          router.push("/documents");
+          try {
+            router.push(`/documents/${result.documentId}`);
+
+            // Fallback navigation in case router.push fails
+            setTimeout(() => {
+              if (window.location.pathname === "/documents/create") {
+                console.warn(
+                  "Router navigation may have failed, using window.location"
+                );
+                window.location.href = `/documents/${result.documentId}`;
+              }
+            }, 2000);
+          } catch (navError) {
+            console.error("Navigation error:", navError);
+            window.location.href = `/documents/${result.documentId}`;
+          }
         }, 1000);
       } else {
+        console.error("Document creation failed:", result.error);
         setError(result.error || "Failed to create document");
+        setIsLoading(false);
       }
     } catch (err) {
+      // Clear the timeout in case of error
+      clearTimeout(timeoutId);
       console.error("Error creating document:", err);
       setError("An unexpected error occurred. Please try again.");
-    } finally {
       setIsLoading(false);
     }
   };

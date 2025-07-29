@@ -173,13 +173,14 @@ export async function PUT(
       }
 
       // Check if content or title has actually changed
+      let hasChanged = false;
       if (originalDocument) {
         const hasContentChanged =
           originalDocument.generated_content !== content;
         const hasTitleChanged = originalDocument.title !== title;
-        const hasChanged = hasContentChanged || hasTitleChanged;
+        hasChanged = hasContentChanged || hasTitleChanged;
       } else {
-        const hasChanged = true;
+        hasChanged = true;
       }
 
       const { error } = await supabase

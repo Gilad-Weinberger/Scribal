@@ -2,6 +2,7 @@
 
 import { GeneratedDocument } from "@/lib/db-schemas";
 import React, { useState, useEffect } from "react";
+import { FastWritingAnimation } from ".";
 
 interface DocumentEditProps {
   document: GeneratedDocument;
@@ -12,6 +13,19 @@ const DocumentEdit = ({ document }: DocumentEditProps) => {
   const [title, setTitle] = useState(document.title || "");
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+  const [showWritingAnimation, setShowWritingAnimation] = useState(false);
+
+  // Check if document was created within the last 45 seconds
+  useEffect(() => {
+    const createdAt = new Date(document.createdAt);
+    const now = new Date();
+    const timeDifference = now.getTime() - createdAt.getTime();
+    const isNewDocument = timeDifference <= 45000; // 45 seconds in milliseconds
+
+    setShowWritingAnimation(
+      isNewDocument && document.generatedContent.length > 0
+    );
+  }, [document.createdAt, document.generatedContent]);
 
   // Update content when document changes
   useEffect(() => {
@@ -25,6 +39,10 @@ const DocumentEdit = ({ document }: DocumentEditProps) => {
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
+  };
+
+  const handleAnimationComplete = () => {
+    setShowWritingAnimation(false);
   };
 
   const handleSaveChanges = async () => {
@@ -94,19 +112,30 @@ const DocumentEdit = ({ document }: DocumentEditProps) => {
           <div className="flex-1 overflow-hidden">
             <div className="h-full px-8 py-6">
               <div className="h-full bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <textarea
-                  value={content}
-                  onChange={handleContentChange}
-                  placeholder="Start writing your document..."
-                  className="w-full h-full p-6 text-gray-900 bg-white border-none outline-none resize-none font-normal leading-relaxed text-base"
-                  style={{
-                    fontFamily:
-                      'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
-                    lineHeight: "1.6",
-                    fontSize: "16px",
-                    whiteSpace: "pre-wrap",
-                  }}
-                />
+                {showWritingAnimation ? (
+                  <div className="w-full h-full p-6 overflow-auto">
+                    <FastWritingAnimation
+                      text={content}
+                      onComplete={handleAnimationComplete}
+                      speed={75} // Fast typing speed
+                      className="text-gray-900 font-normal leading-relaxed text-base"
+                    />
+                  </div>
+                ) : (
+                  <textarea
+                    value={content}
+                    onChange={handleContentChange}
+                    placeholder="Start writing your document..."
+                    className="w-full h-full p-6 text-gray-900 bg-white border-none outline-none resize-none font-normal leading-relaxed text-base"
+                    style={{
+                      fontFamily:
+                        'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+                      lineHeight: "1.6",
+                      fontSize: "16px",
+                      whiteSpace: "pre-wrap",
+                    }}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -126,12 +155,18 @@ const DocumentEdit = ({ document }: DocumentEditProps) => {
                     {saveMessage}
                   </span>
                 )}
+                {showWritingAnimation && (
+                  <span className="text-sm text-blue-600 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    AI is writing your document...
+                  </span>
+                )}
               </div>
               <div className="flex items-center space-x-4">
                 <button
                   className="bg-primary cursor-pointer text-sm text-white px-4 py-2 rounded-md hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleSaveChanges}
-                  disabled={isSaving}
+                  disabled={isSaving || showWritingAnimation}
                 >
                   {isSaving ? "Saving..." : "Save Changes"}
                 </button>

@@ -80,14 +80,6 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ document }) => {
           </div>
         </div>
 
-        {/* Prompt Preview */}
-        <div className="mb-4">
-          <p className="text-xs text-gray-500 mb-1">Prompt:</p>
-          <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded line-clamp-2">
-            {document.prompt}
-          </p>
-        </div>
-
         {/* Footer */}
         <div className="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
           <span className="truncate">

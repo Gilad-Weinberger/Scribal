@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { LoadingSpinner } from "@/components/ui";
+import SubmitAnimation from "./SubmitAnimation";
 import WritingStyleSelector from "./WritingStyleSelector";
 
 interface CreateDocumentFormProps {
@@ -217,15 +217,18 @@ const CreateDocumentForm: React.FC<CreateDocumentFormProps> = ({
           >
             Cancel
           </Link>
-          <button
-            className="bg-primary text-sm text-white border-2 border-border-default cursor-pointer px-3 py-1 rounded-md hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            type="button"
-            onClick={handleCreateDocument}
-            disabled={isLoading || !title.trim() || !prompt.trim()}
-          >
-            {isLoading && <LoadingSpinner size="sm" />}
-            {isLoading ? "Generating document..." : "Create new document"}
-          </button>
+          {isLoading ? (
+            <SubmitAnimation className="justify-center" />
+          ) : (
+            <button
+              className="bg-primary text-sm text-white border-2 border-border-default cursor-pointer px-3 py-1 rounded-md hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              type="button"
+              onClick={handleCreateDocument}
+              disabled={isLoading || !title.trim() || !prompt.trim()}
+            >
+              Create new document
+            </button>
+          )}
         </div>
       </div>
     </div>

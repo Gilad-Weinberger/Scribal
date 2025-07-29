@@ -95,12 +95,40 @@ export const documentsAPI = {
     requirements?: string;
     writingStyleId?: string;
   }) => {
-    const response = await fetch("/api/documents", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 second timeout
+
+    try {
+      const response = await fetch("/api/documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return {
+          success: false,
+          error:
+            errorData.error ||
+            `HTTP ${response.status}: ${response.statusText}`,
+        };
+      }
+
+      return response.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === "AbortError") {
+        return {
+          success: false,
+          error: "Request timed out. Please try again.",
+        };
+      }
+      throw error;
+    }
   },
 
   getDocument: async (id: string) => {
