@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
         Math.min(999.99, analysis.avgSentenceLength)
       ),
       complexityScore: Math.max(0, Math.min(9.99, analysis.complexityScore)),
-      authenticityBaseline: Math.max(0, Math.min(9.99, 85)), // Default baseline
+      authenticityBaseline: Math.max(0, Math.min(100, 85)), // Default baseline - now supports 0-100
     };
 
     const newWritingStyle: WritingStyleInsert = {

@@ -27,7 +27,7 @@ CREATE TABLE public.writing_styles (
     tone_analysis JSONB,
     writing_patterns JSONB,
     sample_phrases TEXT[],
-    authenticity_baseline DECIMAL(3,2) DEFAULT 0.00,
+    authenticity_baseline DECIMAL(5,2) DEFAULT 85.00,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
@@ -76,7 +76,7 @@ CREATE TABLE public.generated_documents (
     requirements TEXT,
     generated_content TEXT NOT NULL,
     word_count INTEGER NOT NULL,
-    authenticity_score DECIMAL(3,2) DEFAULT 0.00,
+    authenticity_score DECIMAL(5,2) DEFAULT 85.00,
     generation_time_ms INTEGER,
     status TEXT DEFAULT 'completed', -- generating, completed, error
     is_favorite BOOLEAN DEFAULT FALSE,
