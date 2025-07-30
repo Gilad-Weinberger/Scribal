@@ -136,7 +136,15 @@ export const documentsAPI = {
     return response.json();
   },
 
-  updateDocument: async (id: string, updates: { isFavorite?: boolean }) => {
+  updateDocument: async (
+    id: string,
+    updates: {
+      isFavorite?: boolean;
+      type?: string;
+      title?: string;
+      content?: string;
+    }
+  ) => {
     const response = await fetch(`/api/documents/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
