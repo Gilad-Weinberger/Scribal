@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { WritingStyle } from "@/lib/db-schemas";
 import { getAuthenticityLevel } from "@/lib/functions/authenticity-calculator";
+import { formatDate } from "@/lib/functions/date-formatter";
 
 interface WritingStyleCardProps {
   style: WritingStyle;
@@ -80,9 +81,7 @@ const WritingStyleCard: React.FC<WritingStyleCardProps> = ({ style }) => {
 
         {/* Footer */}
         <div className="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
-          <span className="truncate">
-            {new Date(style.createdAt).toLocaleDateString()}
-          </span>
+          <span className="truncate">{formatDate(style.createdAt)}</span>
           <div className="flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
             <span>View details</span>
             <svg

@@ -1,8 +1,11 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
+import React, { useState } from "react";
 import { WritingStyle } from "@/lib/db-schemas";
+import { writingStylesAPI } from "@/lib/api-functions";
+import { formatDate } from "@/lib/functions/date-formatter";
+import { useToast } from "@/components/ui";
+import { useRouter } from "next/navigation";
 
 interface WritingStyleDetailProps {
   writingStyle: WritingStyle;
@@ -26,6 +29,12 @@ interface WritingPatterns {
 const WritingStyleDetail: React.FC<WritingStyleDetailProps> = ({
   writingStyle,
 }) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [editedName, setEditedName] = useState(writingStyle.styleName);
+  const [isSaving, setIsSaving] = useState(false);
+  const { showToast } = useToast();
+  const router = useRouter();
+
   const toneAnalysis = writingStyle.toneAnalysis as ToneAnalysis;
   const writingPatterns = writingStyle.writingPatterns as WritingPatterns;
 
@@ -61,38 +70,137 @@ const WritingStyleDetail: React.FC<WritingStyleDetailProps> = ({
     }
   };
 
+  const handleDeleteWritingStyle = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to delete this writing style? This action cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const result = await writingStylesAPI.deleteWritingStyle(writingStyle.id);
+
+      if (result.success) {
+        showToast("Writing style deleted successfully!", "success");
+        router.push("/writing-styles");
+      } else {
+        showToast("Failed to delete writing style. Please try again.", "error");
+      }
+    } catch (error) {
+      console.error("Error deleting writing style:", error);
+      showToast("An error occurred while deleting. Please try again.", "error");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleSaveStyleName = async () => {
+    if (editedName.trim() === writingStyle.styleName || !editedName.trim()) {
+      setEditedName(writingStyle.styleName);
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const result = await writingStylesAPI.updateWritingStyle(
+        writingStyle.id,
+        {
+          styleName: editedName.trim(),
+        }
+      );
+
+      if (result.success) {
+        showToast("Writing style name updated successfully!", "success");
+        // Refresh the page to get the updated data
+        router.refresh();
+      } else {
+        showToast(
+          "Failed to update writing style name. Please try again.",
+          "error"
+        );
+        setEditedName(writingStyle.styleName);
+      }
+    } catch (error) {
+      console.error("Error updating writing style name:", error);
+      showToast("An error occurred while updating. Please try again.", "error");
+      setEditedName(writingStyle.styleName);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {writingStyle.styleName}
-            </h1>
+            <input
+              type="text"
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
+              onBlur={handleSaveStyleName}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSaveStyleName();
+                  (e.target as HTMLInputElement).blur();
+                } else if (e.key === "Escape") {
+                  setEditedName(writingStyle.styleName);
+                  (e.target as HTMLInputElement).blur();
+                }
+              }}
+              className="text-3xl font-bold text-gray-900 mb-2 bg-transparent border-b-2 border-gray-200 hover:border-blue-300 focus:border-blue-500 focus:outline-none px-1 py-1 w-full transition-colors cursor-pointer"
+              placeholder="Enter writing style name"
+              disabled={isSaving}
+              title="Click to edit style name"
+            />
             <p className="text-gray-600">
-              Created on {new Date(writingStyle.createdAt).toLocaleDateString()}
+              Created on {formatDate(writingStyle.createdAt)}
             </p>
           </div>
-          <Link
-            href="/writing-styles"
-            className="flex items-center gap-2 text-primary hover:text-primary-hover transition-colors"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={handleDeleteWritingStyle}
+              disabled={isDeleting}
+              className="bg-red-100 text-red-700 p-2 rounded-lg hover:bg-red-200 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Delete Style"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Back to Writing Styles
-          </Link>
+              {isDeleting ? (
+                <svg
+                  className="w-5 h-5 animate-spin"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -282,24 +390,6 @@ const WritingStyleDetail: React.FC<WritingStyleDetailProps> = ({
                 </div>
               </div>
             )}
-
-          {/* Actions */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Actions
-            </h3>
-            <div className="space-y-3">
-              <button className="w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors font-medium">
-                Use This Style
-              </button>
-              <button className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium">
-                Edit Style
-              </button>
-              <button className="w-full bg-red-100 text-red-700 py-2 px-4 rounded-lg hover:bg-red-200 transition-colors font-medium">
-                Delete Style
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

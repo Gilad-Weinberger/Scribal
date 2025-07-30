@@ -54,7 +54,7 @@ ADD COLUMN user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE;
 CREATE TABLE public.sample_documents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-    writing_style_id UUID REFERENCES public.writing_styles(id) ON DELETE CASCADE,
+    writing_style_id UUID REFERENCES public.writing_styles(id) ON DELETE SET NULL, -- Can be NULL if no writing style is associated
     title TEXT NOT NULL,
     content TEXT NOT NULL,
     word_count INTEGER NOT NULL,
@@ -70,7 +70,7 @@ CREATE TABLE public.sample_documents (
 CREATE TABLE public.generated_documents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-    writing_style_id UUID REFERENCES public.writing_styles(id) ON DELETE CASCADE,
+    writing_style_id UUID REFERENCES public.writing_styles(id) ON DELETE SET NULL, -- Can be NULL if no writing style is associated
     title TEXT NOT NULL,
     prompt TEXT NOT NULL,
     requirements TEXT,
@@ -80,6 +80,7 @@ CREATE TABLE public.generated_documents (
     generation_time_ms INTEGER,
     status TEXT DEFAULT 'completed', -- generating, completed, error
     is_favorite BOOLEAN DEFAULT FALSE,
+    is_edited BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
@@ -104,6 +105,39 @@ CREATE TRIGGER users_updated_at BEFORE UPDATE ON public.users FOR EACH ROW EXECU
 CREATE TRIGGER writing_styles_updated_at BEFORE UPDATE ON public.writing_styles FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER sample_documents_updated_at BEFORE UPDATE ON public.sample_documents FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER generated_documents_updated_at BEFORE UPDATE ON public.generated_documents FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- =====================================================
+-- Writing Style Deletion Handling
+-- =====================================================
+
+-- Function to handle writing style deletion
+CREATE OR REPLACE FUNCTION public.handle_writing_style_deletion()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Set writing_style_id to NULL for all sample_documents that reference this writing style
+  UPDATE public.sample_documents 
+  SET writing_style_id = NULL 
+  WHERE writing_style_id = OLD.id;
+  
+  -- Set writing_style_id to NULL for all generated_documents that reference this writing style
+  UPDATE public.generated_documents 
+  SET writing_style_id = NULL 
+  WHERE writing_style_id = OLD.id;
+  
+  -- Set default_writing_style to NULL for users who have this as their default
+  UPDATE public.users 
+  SET default_writing_style = NULL 
+  WHERE default_writing_style = OLD.id;
+  
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to automatically handle writing style deletion
+CREATE TRIGGER on_writing_style_deleted
+  BEFORE DELETE ON public.writing_styles
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_writing_style_deletion();
 
 
 -- =====================================================
@@ -163,4 +197,8 @@ CREATE INDEX idx_sample_documents_user_id ON sample_documents(user_id);
 CREATE INDEX idx_sample_documents_writing_style_id ON sample_documents(writing_style_id);
 CREATE INDEX idx_generated_documents_user_id ON generated_documents(user_id);
 CREATE INDEX idx_generated_documents_created_at ON generated_documents(created_at DESC);
+
+-- Indexes for null writing style queries
+CREATE INDEX idx_sample_documents_writing_style_id_null ON sample_documents(writing_style_id) WHERE writing_style_id IS NULL;
+CREATE INDEX idx_generated_documents_writing_style_id_null ON generated_documents(writing_style_id) WHERE writing_style_id IS NULL;
  

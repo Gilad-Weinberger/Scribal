@@ -185,6 +185,15 @@ export const writingStylesAPI = {
     return response.json();
   },
 
+  updateWritingStyle: async (id: string, updates: { styleName: string }) => {
+    const response = await fetch(`/api/writing-styles/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
+    return response.json();
+  },
+
   deleteWritingStyle: async (id: string) => {
     const response = await fetch(`/api/writing-styles/${id}`, {
       method: "DELETE",

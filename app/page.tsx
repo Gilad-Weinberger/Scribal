@@ -27,13 +27,21 @@ export default function Home() {
         </p>
         <div className="mt-10 flex items-center justify-center gap-x-6">
           {user ? (
-            <button
-              type="button"
-              className="rounded-md bg-primary px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-hover focus-visible:outline-offset-2 focus-visible:outline-primary-focus transition-colors"
-              onClick={handleSignOut}
-            >
-              Logout
-            </button>
+            <>
+              <Link
+                href="/documents"
+                className="rounded-md bg-primary px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-hover focus-visible:outline-offset-2 focus-visible:outline-primary-focus transition-colors"
+              >
+                Go to Documents
+              </Link>
+              <button
+                type="button"
+                className="rounded-md bg-gray-100 px-3.5 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-200 focus-visible:outline-offset-2 focus-visible:outline-gray-500 transition-colors"
+                onClick={handleSignOut}
+              >
+                Logout
+              </button>
+            </>
           ) : (
             <Link
               href="/auth/signup"

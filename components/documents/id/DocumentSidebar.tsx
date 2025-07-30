@@ -1,5 +1,6 @@
 import React from "react";
 import { GeneratedDocument } from "@/lib/db-schemas";
+import { formatDate } from "@/lib/functions/date-formatter";
 import {
   ChartBarIcon,
   DocumentTextIcon,
@@ -42,7 +43,7 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ document }) => {
           {document.title}
         </h3>
         <p className="text-xs text-gray-500 mt-1">
-          Created {new Date(document.createdAt).toLocaleDateString()}
+          Created {formatDate(document.createdAt)}
         </p>
       </div>
 

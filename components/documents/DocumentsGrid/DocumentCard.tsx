@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { GeneratedDocument, WritingStyle } from "@/lib/db-schemas";
 import { writingStylesAPI } from "@/lib/api-functions";
+import { formatDate } from "@/lib/functions/date-formatter";
 
 interface DocumentCardProps {
   document: GeneratedDocument;
@@ -79,9 +80,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ document }) => {
 
         {/* Footer */}
         <div className="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
-          <span className="truncate">
-            {new Date(document.createdAt).toLocaleDateString()}
-          </span>
+          <span className="truncate">{formatDate(document.createdAt)}</span>
           <div className="flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
             <span>View details</span>
             <svg
