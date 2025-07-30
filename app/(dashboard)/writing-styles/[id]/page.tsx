@@ -2,7 +2,7 @@
 
 import { LayoutMain } from "@/components/ui";
 import WritingStyleDetail from "@/components/writing-styles/id/WritingStyleDetail";
-import { writingStylesAPI } from "@/lib/api-functions";
+import { writingStylesAPI } from "@/lib/functions/api-functions";
 import React, { useEffect, useState } from "react";
 import { WritingStyle } from "@/lib/db-schemas";
 import { useParams } from "next/navigation";

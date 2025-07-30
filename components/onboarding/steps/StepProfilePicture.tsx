@@ -4,7 +4,7 @@ import React, { useState, useRef } from "react";
 import { User } from "@/lib/db-schemas";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
-import { userAPI } from "@/lib/api-functions";
+import { userAPI } from "@/lib/functions/api-functions";
 
 interface StepProfilePictureProps {
   data: Partial<User>;

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { GeneratedDocument, WritingStyle } from "@/lib/db-schemas";
-import { writingStylesAPI } from "@/lib/api-functions";
+import { writingStylesAPI } from "@/lib/functions/api-functions";
 import { formatDate } from "@/lib/functions/date-formatter";
 
 interface DocumentCardProps {

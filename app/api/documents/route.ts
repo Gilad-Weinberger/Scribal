@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { GeneratedDocument, WritingStyle, User } from "@/lib/db-schemas";
-import { buildAIPrompt } from "@/lib/ai-prompt-builder";
+import { buildAIPrompt } from "@/lib/functions/ai-prompt-builder";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Gemini AI

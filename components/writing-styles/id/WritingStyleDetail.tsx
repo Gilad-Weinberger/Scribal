@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { WritingStyle } from "@/lib/db-schemas";
-import { writingStylesAPI } from "@/lib/api-functions";
+import { writingStylesAPI } from "@/lib/functions/api-functions";
 import { formatDate } from "@/lib/functions/date-formatter";
 import { useToast } from "@/components/ui";
 import { useRouter } from "next/navigation";

@@ -1,7 +1,7 @@
 "use client";
 import { LayoutMain, SkeletonLoading } from "@/components/ui";
 import { DocumentsHeader, DocumentsGrid } from "@/components/documents";
-import { documentsAPI, writingStylesAPI } from "@/lib/api-functions";
+import { documentsAPI, writingStylesAPI } from "@/lib/functions/api-functions";
 import { useAuth } from "@/context/AuthContext";
 import React, { useEffect, useState } from "react";
 import { GeneratedDocument } from "@/lib/db-schemas";

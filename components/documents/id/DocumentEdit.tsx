@@ -4,7 +4,7 @@ import { GeneratedDocument } from "@/lib/db-schemas";
 import React, { useState, useEffect } from "react";
 import { FastWritingAnimation } from ".";
 import { useToast } from "@/components/ui";
-import { documentsAPI } from "@/lib/api-functions";
+import { documentsAPI } from "@/lib/functions/api-functions";
 
 interface DocumentEditProps {
   document: GeneratedDocument;

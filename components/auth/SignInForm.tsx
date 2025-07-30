@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { authAPI } from "@/lib/api-functions";
+import { authAPI } from "@/lib/functions/api-functions";
 import AuthInput from "./AuthInput";
 import AuthButton from "./AuthButton";
 

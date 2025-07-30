@@ -1,7 +1,7 @@
 "use client";
 
 import { DocumentEdit, LayoutDocument } from "@/components/documents/id";
-import { documentsAPI } from "@/lib/api-functions";
+import { documentsAPI } from "@/lib/functions/api-functions";
 import React, { useEffect, useState } from "react";
 import { GeneratedDocument } from "@/lib/db-schemas";
 import { useParams } from "next/navigation";
