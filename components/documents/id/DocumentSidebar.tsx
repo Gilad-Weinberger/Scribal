@@ -7,9 +7,9 @@ import {
   CheckCircleIcon,
   ClockIcon,
   LightningBoltIcon,
-  DocumentDownloadIcon,
   TrashIcon,
 } from "@/components/ui";
+import DownloadDropdown from "./DownloadDropdown";
 
 interface DocumentSidebarProps {
   document: GeneratedDocument;
@@ -127,13 +127,11 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({ document }) => {
 
       {/* Actions - Fixed at bottom */}
       <div className="flex py-4 px-8 gap-8 border-t border-gray-200 flex-shrink-0">
-        <div className="relative group w-full">
-          <button className="w-full h-10 flex items-center justify-center bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-xs cursor-pointer">
-            <DocumentDownloadIcon className="w-4 h-4" />
-          </button>
-          <span className="absolute bottom-full left-1/2 -translate-x-1/2 -mb-1 whitespace-nowrap bg-background-secondary text-black border-2 border-border-light px-2 py-1 rounded shadow opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-2 pointer-events-none group-hover:pointer-events-auto transition-all duration-300 text-xs z-10">
-            Download
-          </span>
+        <div className="w-full">
+          <DownloadDropdown
+            documentTitle={document.title}
+            documentContent={document.generatedContent}
+          />
         </div>
         <div className="relative group w-full">
           <button className="w-full h-10 flex items-center justify-center bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium text-xs hover:text-red-800 cursor-pointer">
