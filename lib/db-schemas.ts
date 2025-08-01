@@ -86,6 +86,17 @@ export interface Feedback {
   updatedAt: string; // ISO timestamp string
 }
 
+export interface FeedbackComment {
+  id: string; // UUID
+  feedbackId: string; // UUID
+  userId: string; // UUID
+  content: string;
+  likes: string[]; // Array of user IDs who liked
+  likesCount: number;
+  createdAt: string; // ISO timestamp string
+  updatedAt: string; // ISO timestamp string
+}
+
 /*
  |-----------------------------------------------------------------------------
  | Supabase Database Types
@@ -259,6 +270,38 @@ export interface Database {
           updated_at?: string;
         };
       };
+      feedback_comments: {
+        Row: {
+          id: string;
+          feedback_id: string;
+          user_id: string;
+          content: string;
+          likes: Json;
+          likes_count: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          feedback_id: string;
+          user_id: string;
+          content: string;
+          likes?: Json;
+          likes_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          feedback_id?: string;
+          user_id?: string;
+          content?: string;
+          likes?: Json;
+          likes_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       generated_documents: {
         Row: {
           id: string;
@@ -362,6 +405,10 @@ export type FeedbackRow = Tables<"feedbacks">;
 export type FeedbackInsert = Inserts<"feedbacks">;
 export type FeedbackUpdate = Updates<"feedbacks">;
 
+export type FeedbackCommentRow = Tables<"feedback_comments">;
+export type FeedbackCommentInsert = Inserts<"feedback_comments">;
+export type FeedbackCommentUpdate = Updates<"feedback_comments">;
+
 /*
  |-----------------------------------------------------------------------------
  | Utility Functions
@@ -416,17 +463,52 @@ export const dbRowToFeedback = (row: FeedbackRow): Feedback => ({
 });
 
 /** Convert a partial `Feedback` object to a Supabase `Update` object. */
-export const feedbackToDbUpdate = (feedback: Partial<Feedback>): FeedbackUpdate => {
+export const feedbackToDbUpdate = (
+  feedback: Partial<Feedback>
+): FeedbackUpdate => {
   const record: Partial<FeedbackUpdate> = {
     updated_at: new Date().toISOString(),
   };
 
   if (feedback.title !== undefined) record.title = feedback.title;
-  if (feedback.description !== undefined) record.description = feedback.description;
+  if (feedback.description !== undefined)
+    record.description = feedback.description;
   if (feedback.category !== undefined) record.category = feedback.category;
   if (feedback.status !== undefined) record.status = feedback.status;
   if (feedback.upvotes !== undefined) record.upvotes = feedback.upvotes;
-  if (feedback.upvoteCount !== undefined) record.upvote_count = feedback.upvoteCount;
+  if (feedback.upvoteCount !== undefined)
+    record.upvote_count = feedback.upvoteCount;
 
   return record as FeedbackUpdate;
+};
+
+/** Convert database row to FeedbackComment interface */
+export const dbRowToFeedbackComment = (
+  row: FeedbackCommentRow
+): FeedbackComment => ({
+  id: row.id,
+  feedbackId: row.feedback_id,
+  userId: row.user_id,
+  content: row.content,
+  likes: (row.likes as string[]) || [],
+  likesCount: row.likes_count,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+/** Convert a partial `FeedbackComment` object to a Supabase `Update` object. */
+export const feedbackCommentToDbUpdate = (
+  comment: Partial<FeedbackComment>
+): FeedbackCommentUpdate => {
+  const record: Partial<FeedbackCommentUpdate> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (comment.feedbackId !== undefined) record.feedback_id = comment.feedbackId;
+  if (comment.userId !== undefined) record.user_id = comment.userId;
+  if (comment.content !== undefined) record.content = comment.content;
+  if (comment.likes !== undefined) record.likes = comment.likes;
+  if (comment.likesCount !== undefined) record.likes_count = comment.likesCount;
+
+  return record as FeedbackCommentUpdate;
 };

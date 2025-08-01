@@ -253,4 +253,53 @@ CREATE INDEX idx_feedbacks_category ON feedbacks(category);
 CREATE INDEX idx_feedbacks_status ON feedbacks(status);
 CREATE INDEX idx_feedbacks_upvote_count ON feedbacks(upvote_count DESC);
 CREATE INDEX idx_feedbacks_created_at ON feedbacks(created_at DESC);
+
+-- =====================================================
+-- Feedback Comments Table
+-- =====================================================
+
+-- Feedback comments table for user comments on feedback
+CREATE TABLE public.feedback_comments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    feedback_id UUID NOT NULL REFERENCES public.feedbacks(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    likes JSONB DEFAULT '[]'::jsonb, -- Array of user IDs who liked
+    likes_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- Apply updated_at trigger for feedback_comments
+CREATE TRIGGER feedback_comments_updated_at BEFORE UPDATE ON public.feedback_comments FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- Function to update likes count when likes array changes
+CREATE OR REPLACE FUNCTION public.update_feedback_comment_likes_count()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.likes_count = jsonb_array_length(NEW.likes);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to automatically update likes count
+CREATE TRIGGER update_feedback_comment_likes_count_trigger
+  BEFORE INSERT OR UPDATE ON public.feedback_comments
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_feedback_comment_likes_count();
+
+-- Enable RLS for feedback_comments table
+ALTER TABLE public.feedback_comments ENABLE ROW LEVEL SECURITY;
+
+-- Policies for feedback_comments table
+CREATE POLICY "Users can view all feedback comments" ON public.feedback_comments FOR SELECT USING (true);
+CREATE POLICY "Users can insert their own feedback comments" ON public.feedback_comments FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update their own feedback comments" ON public.feedback_comments FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own feedback comments" ON public.feedback_comments FOR DELETE USING (auth.uid() = user_id);
+
+-- Indexes for feedback_comments table
+CREATE INDEX idx_feedback_comments_feedback_id ON feedback_comments(feedback_id);
+CREATE INDEX idx_feedback_comments_user_id ON feedback_comments(user_id);
+CREATE INDEX idx_feedback_comments_created_at ON feedback_comments(created_at DESC);
+CREATE INDEX idx_feedback_comments_likes_count ON feedback_comments(likes_count DESC);
  

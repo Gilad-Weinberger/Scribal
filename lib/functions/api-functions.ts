@@ -287,6 +287,57 @@ export const feedbacksAPI = {
   },
 };
 
+// Feedback Comments API
+export const feedbackCommentsAPI = {
+  getComments: async (feedbackId: string) => {
+    const response = await fetch(`/api/feedbacks/${feedbackId}/comments`);
+    return response.json();
+  },
+
+  createComment: async (feedbackId: string, content: string) => {
+    const response = await fetch(`/api/feedbacks/${feedbackId}/comments`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ content }),
+    });
+    return response.json();
+  },
+
+  updateComment: async (feedbackId: string, commentId: string, content: string) => {
+    const response = await fetch(`/api/feedbacks/${feedbackId}/comments/${commentId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ content }),
+    });
+    return response.json();
+  },
+
+  deleteComment: async (feedbackId: string, commentId: string) => {
+    const response = await fetch(`/api/feedbacks/${feedbackId}/comments/${commentId}`, {
+      method: "DELETE",
+    });
+    return response.json();
+  },
+
+  likeComment: async (feedbackId: string, commentId: string) => {
+    const response = await fetch(`/api/feedbacks/${feedbackId}/comments/${commentId}/like`, {
+      method: "POST",
+    });
+    return response.json();
+  },
+
+  unlikeComment: async (feedbackId: string, commentId: string) => {
+    const response = await fetch(`/api/feedbacks/${feedbackId}/comments/${commentId}/like`, {
+      method: "DELETE",
+    });
+    return response.json();
+  },
+};
+
 // Client-side helper functions (replacing client function files)
 export const clientHelpers = {
   // Document creation helper

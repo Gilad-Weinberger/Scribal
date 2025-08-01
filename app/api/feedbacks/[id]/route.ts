@@ -22,7 +22,12 @@ export async function GET(
 
     const { data: feedback, error } = await supabase
       .from("feedbacks")
-      .select("*")
+      .select(
+        `
+        *,
+        comments:feedback_comments(count)
+      `
+      )
       .eq("id", params.id)
       .single();
 
@@ -34,7 +39,10 @@ export async function GET(
       );
     }
 
-    const formattedFeedback = dbRowToFeedback(feedback);
+    const formattedFeedback = {
+      ...dbRowToFeedback(feedback),
+      commentsCount: feedback.comments?.[0]?.count || 0,
+    };
 
     return NextResponse.json({
       success: true,
@@ -136,7 +144,12 @@ export async function PUT(
       .from("feedbacks")
       .update(updateData)
       .eq("id", params.id)
-      .select()
+      .select(
+        `
+        *,
+        comments:feedback_comments(count)
+      `
+      )
       .single();
 
     if (error) {
@@ -147,7 +160,10 @@ export async function PUT(
       );
     }
 
-    const formattedFeedback = dbRowToFeedback(feedback);
+    const formattedFeedback = {
+      ...dbRowToFeedback(feedback),
+      commentsCount: feedback.comments?.[0]?.count || 0,
+    };
 
     return NextResponse.json({
       success: true,

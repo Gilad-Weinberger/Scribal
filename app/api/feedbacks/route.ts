@@ -19,7 +19,12 @@ export async function GET() {
 
     const { data: feedbacks, error } = await supabase
       .from("feedbacks")
-      .select("*")
+      .select(
+        `
+        *,
+        comments:feedback_comments(count)
+      `
+      )
       .order("upvote_count", { ascending: false })
       .order("created_at", { ascending: false });
 
@@ -31,7 +36,10 @@ export async function GET() {
       );
     }
 
-    const formattedFeedbacks = feedbacks.map(dbRowToFeedback);
+    const formattedFeedbacks = feedbacks.map((feedback) => ({
+      ...dbRowToFeedback(feedback),
+      commentsCount: feedback.comments?.[0]?.count || 0,
+    }));
 
     return NextResponse.json({
       success: true,
