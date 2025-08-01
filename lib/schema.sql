@@ -201,4 +201,56 @@ CREATE INDEX idx_generated_documents_created_at ON generated_documents(created_a
 -- Indexes for null writing style queries
 CREATE INDEX idx_sample_documents_writing_style_id_null ON sample_documents(writing_style_id) WHERE writing_style_id IS NULL;
 CREATE INDEX idx_generated_documents_writing_style_id_null ON generated_documents(writing_style_id) WHERE writing_style_id IS NULL;
+
+-- =====================================================
+-- Feedbacks Table
+-- =====================================================
+
+-- Feedbacks table for user feedback and feature requests
+CREATE TABLE public.feedbacks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'general', -- general, feature, bug, improvement
+    status TEXT NOT NULL DEFAULT 'open', -- open, in_progress, completed, closed
+    upvotes JSONB DEFAULT '[]'::jsonb, -- Array of user IDs who upvoted
+    upvote_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- Apply updated_at trigger for feedbacks
+CREATE TRIGGER feedbacks_updated_at BEFORE UPDATE ON public.feedbacks FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- Function to update upvote count when upvotes array changes
+CREATE OR REPLACE FUNCTION public.update_feedback_upvote_count()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.upvote_count = jsonb_array_length(NEW.upvotes);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to automatically update upvote count
+CREATE TRIGGER update_feedback_upvote_count_trigger
+  BEFORE INSERT OR UPDATE ON public.feedbacks
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_feedback_upvote_count();
+
+-- Enable RLS for feedbacks table
+ALTER TABLE public.feedbacks ENABLE ROW LEVEL SECURITY;
+
+-- Policies for feedbacks table
+CREATE POLICY "Users can view all feedbacks" ON public.feedbacks FOR SELECT USING (true);
+CREATE POLICY "Users can insert their own feedback" ON public.feedbacks FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update their own feedback" ON public.feedbacks FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own feedback" ON public.feedbacks FOR DELETE USING (auth.uid() = user_id);
+
+-- Indexes for feedbacks table
+CREATE INDEX idx_feedbacks_user_id ON feedbacks(user_id);
+CREATE INDEX idx_feedbacks_category ON feedbacks(category);
+CREATE INDEX idx_feedbacks_status ON feedbacks(status);
+CREATE INDEX idx_feedbacks_upvote_count ON feedbacks(upvote_count DESC);
+CREATE INDEX idx_feedbacks_created_at ON feedbacks(created_at DESC);
  

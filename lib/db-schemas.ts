@@ -73,6 +73,19 @@ export interface GeneratedDocument {
   updatedAt: string; // ISO timestamp string
 }
 
+export interface Feedback {
+  id: string; // UUID
+  userId: string; // UUID
+  title: string;
+  description: string;
+  category: "feature" | "bug";
+  status: "open" | "in_progress" | "completed" | "closed";
+  upvotes: string[]; // Array of user IDs who upvoted
+  upvoteCount: number;
+  createdAt: string; // ISO timestamp string
+  updatedAt: string; // ISO timestamp string
+}
+
 /*
  |-----------------------------------------------------------------------------
  | Supabase Database Types
@@ -208,6 +221,44 @@ export interface Database {
           updated_at?: string;
         };
       };
+      feedbacks: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          description: string;
+          category: string;
+          status: string;
+          upvotes: Json;
+          upvote_count: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          description: string;
+          category?: string;
+          status?: string;
+          upvotes?: Json;
+          upvote_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          description?: string;
+          category?: string;
+          status?: string;
+          upvotes?: Json;
+          upvote_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       generated_documents: {
         Row: {
           id: string;
@@ -307,6 +358,10 @@ export type GeneratedDocumentRow = Tables<"generated_documents">;
 export type GeneratedDocumentInsert = Inserts<"generated_documents">;
 export type GeneratedDocumentUpdate = Updates<"generated_documents">;
 
+export type FeedbackRow = Tables<"feedbacks">;
+export type FeedbackInsert = Inserts<"feedbacks">;
+export type FeedbackUpdate = Updates<"feedbacks">;
+
 /*
  |-----------------------------------------------------------------------------
  | Utility Functions
@@ -344,4 +399,34 @@ export const userToDbUpdate = (user: Partial<User>): UserUpdate => {
     record.default_writing_style = user.defaultWritingStyle;
 
   return record as UserUpdate;
+};
+
+/** Convert database row to Feedback interface */
+export const dbRowToFeedback = (row: FeedbackRow): Feedback => ({
+  id: row.id,
+  userId: row.user_id,
+  title: row.title,
+  description: row.description,
+  category: row.category as Feedback["category"],
+  status: row.status as Feedback["status"],
+  upvotes: (row.upvotes as string[]) || [],
+  upvoteCount: row.upvote_count,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+/** Convert a partial `Feedback` object to a Supabase `Update` object. */
+export const feedbackToDbUpdate = (feedback: Partial<Feedback>): FeedbackUpdate => {
+  const record: Partial<FeedbackUpdate> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (feedback.title !== undefined) record.title = feedback.title;
+  if (feedback.description !== undefined) record.description = feedback.description;
+  if (feedback.category !== undefined) record.category = feedback.category;
+  if (feedback.status !== undefined) record.status = feedback.status;
+  if (feedback.upvotes !== undefined) record.upvotes = feedback.upvotes;
+  if (feedback.upvoteCount !== undefined) record.upvote_count = feedback.upvoteCount;
+
+  return record as FeedbackUpdate;
 };

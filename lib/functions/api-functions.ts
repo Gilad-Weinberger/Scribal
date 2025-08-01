@@ -215,6 +215,78 @@ export const writingStylesAPI = {
   },
 };
 
+// Feedbacks API
+export const feedbacksAPI = {
+  getAllFeedbacks: async () => {
+    const response = await fetch("/api/feedbacks");
+    return response.json();
+  },
+
+  createFeedback: async (data: {
+    title: string;
+    description: string;
+    category: "feature" | "bug";
+  }) => {
+    const response = await fetch("/api/feedbacks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+    return result;
+  },
+
+  getFeedback: async (id: string) => {
+    const response = await fetch(`/api/feedbacks/${id}`);
+    return response.json();
+  },
+
+  updateFeedback: async (
+    id: string,
+    updates: {
+      title?: string;
+      description?: string;
+      category?: "feature" | "bug";
+      status?: "open" | "in_progress" | "completed" | "closed";
+    }
+  ) => {
+    const response = await fetch(`/api/feedbacks/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updates),
+    });
+
+    const result = await response.json();
+    return result;
+  },
+
+  deleteFeedback: async (id: string) => {
+    const response = await fetch(`/api/feedbacks/${id}`, {
+      method: "DELETE",
+    });
+    return response.json();
+  },
+
+  upvoteFeedback: async (id: string) => {
+    const response = await fetch(`/api/feedbacks/${id}/upvote`, {
+      method: "POST",
+    });
+    return response.json();
+  },
+
+  removeUpvote: async (id: string) => {
+    const response = await fetch(`/api/feedbacks/${id}/upvote`, {
+      method: "DELETE",
+    });
+    return response.json();
+  },
+};
+
 // Client-side helper functions (replacing client function files)
 export const clientHelpers = {
   // Document creation helper
@@ -335,6 +407,68 @@ export const clientHelpers = {
           error instanceof Error
             ? error.message
             : "Failed to process writing style creation",
+      };
+    }
+  },
+
+  // Feedback creation helper
+  processFeedbackCreation: async (data: {
+    title: string;
+    description: string;
+    category: "feature" | "bug";
+  }) => {
+    try {
+      // Enhanced validation
+      if (!data.title.trim()) {
+        return {
+          success: false,
+          error: "Please provide a title for your feedback",
+        };
+      }
+
+      if (data.title.trim().length < 3) {
+        return {
+          success: false,
+          error: "Feedback title must be at least 3 characters long",
+        };
+      }
+
+      if (!data.description.trim()) {
+        return {
+          success: false,
+          error: "Please provide a description for your feedback",
+        };
+      }
+
+      if (data.description.trim().length < 10) {
+        return {
+          success: false,
+          error:
+            "Please provide a more detailed description (at least 10 characters)",
+        };
+      }
+
+      const result = await feedbacksAPI.createFeedback(data);
+
+      if (!result.success || !result.feedback) {
+        return {
+          success: false,
+          error: result.error || "Failed to create feedback",
+        };
+      }
+
+      return {
+        success: true,
+        feedbackId: result.feedback.id,
+      };
+    } catch (error: unknown) {
+      console.error("Error in processFeedbackCreation:", error);
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to process feedback creation",
       };
     }
   },
