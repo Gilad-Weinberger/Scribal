@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import { TrashIcon } from "@/components/ui/icons";
 
 interface CommentUser {
   id: string;
@@ -43,7 +44,7 @@ const CommentItem = ({
   const isOwner = currentUserId && comment.userId === currentUserId;
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4">
+    <div className="border border-gray-200 rounded-lg p-4 group">
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
@@ -73,9 +74,10 @@ const CommentItem = ({
         {isOwner && (
           <button
             onClick={() => onDelete(comment.id)}
-            className="text-red-600 hover:text-red-800 text-sm"
+            className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-red-600 hover:text-red-800 p-2 rounded-md hover:bg-red-50"
+            title="Delete comment"
           >
-            Delete
+            <TrashIcon className="w-4 h-4" />
           </button>
         )}
       </div>
