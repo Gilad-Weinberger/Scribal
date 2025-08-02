@@ -50,12 +50,12 @@ export async function middleware(req: NextRequest) {
     (pathname.startsWith("/auth/signin") || pathname.startsWith("/auth/signup"))
   ) {
     const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = "/dashboard";
+    redirectUrl.pathname = "/documents";
     return NextResponse.redirect(redirectUrl);
   }
 
   // Handle onboarding redirects for authenticated users
-  if (user && pathname === "/dashboard") {
+  if (user && pathname === "/documents") {
     // Check if user has completed onboarding by fetching user data
     const { data: userData } = await supabase
       .from("users")

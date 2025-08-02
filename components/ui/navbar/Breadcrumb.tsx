@@ -208,7 +208,7 @@ const Breadcrumb = () => {
     <div className="flex items-center gap-2 text-sm text-gray-600">
       {/* Logo */}
       <Link
-        href="/dashboard"
+        href="/documents"
         className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
       >
         <LogoIcon />

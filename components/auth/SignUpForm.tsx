@@ -18,7 +18,7 @@ export default function SignUpForm() {
     try {
       const result = await authAPI.signUp(email, password, displayName);
       if (result.success) {
-        window.location.href = "/dashboard";
+        window.location.href = "/documents";
       } else {
         window.location.href = `/auth/signup?error=${encodeURIComponent(
           result.error || "Sign up failed"

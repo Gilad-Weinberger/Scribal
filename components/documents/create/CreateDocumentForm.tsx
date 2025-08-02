@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import SubmitAnimation from "./SubmitAnimation";
 import WritingStyleSelector from "./WritingStyleSelector";
 
 interface CreateDocumentFormProps {
@@ -113,26 +112,36 @@ const CreateDocumentForm: React.FC<CreateDocumentFormProps> = ({
           </p>
         </div>
 
-        <div className="p-4 flex justify-between border-b-2 border-border-default">
+        <div className="p-4 border-b-2 border-border-default">
           <p className="text-sm font-medium">Document Title</p>
-          <div className="w-[60%]">
-            <input
-              type="text"
-              placeholder="Enter document title"
-              className={`w-full px-3 py-2 border-2 rounded-lg hover:bg-background-hover focus:outline-none focus:ring-1 bg-background-input text-sm transition-colors ${
-                titleError
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-border-default focus:ring-text-medium"
-              }`}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              disabled={isLoading}
-            />
-            {titleError && (
-              <p className="text-xs text-red-600 mt-1">{titleError}</p>
-            )}
-          </div>
+          <p className="text-xs text-text-secondary mt-1">
+            Give your document a descriptive title.
+          </p>
+          <input
+            type="text"
+            placeholder="Enter document title"
+            className={`w-full mt-3 px-3 py-2 border-2 rounded-lg hover:bg-background-hover focus:outline-none focus:ring-1 bg-background-input text-sm transition-colors ${
+              titleError
+                ? "border-red-500 focus:ring-red-500"
+                : "border-border-default focus:ring-text-medium"
+            }`}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            disabled={isLoading}
+          />
+          {titleError && (
+            <p className="text-xs text-red-600 mt-1">{titleError}</p>
+          )}
         </div>
+
+        {userId && (
+          <WritingStyleSelector
+            userId={userId}
+            selectedWritingStyleId={selectedWritingStyleId}
+            onWritingStyleChange={setSelectedWritingStyleId}
+            disabled={isLoading}
+          />
+        )}
 
         <div className="p-4 border-b-2 border-border-default">
           <p className="text-sm font-medium">Prompt</p>
@@ -182,15 +191,6 @@ const CreateDocumentForm: React.FC<CreateDocumentFormProps> = ({
           </p>
         </div>
 
-        {userId && (
-          <WritingStyleSelector
-            userId={userId}
-            selectedWritingStyleId={selectedWritingStyleId}
-            onWritingStyleChange={setSelectedWritingStyleId}
-            disabled={isLoading}
-          />
-        )}
-
         {error && (
           <div className="p-4 border-b-2 border-border-default">
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
@@ -217,18 +217,14 @@ const CreateDocumentForm: React.FC<CreateDocumentFormProps> = ({
           >
             Cancel
           </Link>
-          {isLoading ? (
-            <SubmitAnimation className="justify-center" />
-          ) : (
-            <button
-              className="bg-primary text-sm text-white border-2 border-border-default cursor-pointer px-3 py-1 rounded-md hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              type="button"
-              onClick={handleCreateDocument}
-              disabled={isLoading || !title.trim() || !prompt.trim()}
-            >
-              Create new document
-            </button>
-          )}
+          <button
+            className="bg-primary text-sm text-white border-2 border-border-default cursor-pointer px-3 py-1 rounded-md hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            type="button"
+            onClick={handleCreateDocument}
+            disabled={isLoading || !title.trim() || !prompt.trim()}
+          >
+            {isLoading ? "Creating new document..." : "Create new document"}
+          </button>
         </div>
       </div>
     </div>

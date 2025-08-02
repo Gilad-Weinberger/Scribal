@@ -110,7 +110,7 @@ const OnboardingFlow = () => {
         // Redirect back to the original page if specified, otherwise go to dashboard
         const returnTo = searchParams.get("returnTo");
         const redirectPath =
-          returnTo && returnTo !== "/onboarding" ? returnTo : "/dashboard";
+          returnTo && returnTo !== "/onboarding" ? returnTo : "/documents";
         router.push(redirectPath);
       } else {
         setError(result.error || "An unknown error occurred.");

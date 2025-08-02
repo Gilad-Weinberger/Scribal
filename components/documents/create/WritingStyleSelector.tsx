@@ -1,27 +1,19 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import { writingStylesAPI } from "@/lib/functions/api-functions";
-
-interface ToneAnalysis {
-  formality?: string;
-  emotion?: string;
-}
-
-interface WritingStyle {
-  id: string;
-  styleName: string;
-  vocabularyLevel: number | null;
-  toneAnalysis: ToneAnalysis;
-}
-
-interface WritingStyleSelectorProps {
-  userId: string;
-  selectedWritingStyleId?: string;
-  onWritingStyleChange: (writingStyleId: string | undefined) => void;
-  disabled?: boolean;
-}
+import Link from "next/link";
+import {
+  WritingStyle,
+  WritingStyleSelectorProps,
+} from "./WritingStyleSelector/types";
+import {
+  getVocabularyLevelText,
+  getToneDescription,
+} from "./WritingStyleSelector/utils";
+import SearchInput from "./WritingStyleSelector/SearchInput";
+import WritingStylesDropdown from "./WritingStyleSelector/WritingStylesDropdown";
+import SelectedStyleDisplay from "./WritingStyleSelector/SelectedStyleDisplay";
 
 const WritingStyleSelector: React.FC<WritingStyleSelectorProps> = ({
   userId,
@@ -30,8 +22,12 @@ const WritingStyleSelector: React.FC<WritingStyleSelectorProps> = ({
   disabled = false,
 }) => {
   const [writingStyles, setWritingStyles] = useState<WritingStyle[]>([]);
+  const [filteredStyles, setFilteredStyles] = useState<WritingStyle[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isExpanded, setIsExpanded] = useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchWritingStyles = async () => {
@@ -43,6 +39,7 @@ const WritingStyleSelector: React.FC<WritingStyleSelectorProps> = ({
 
         if (result.success && result.writingStyles) {
           setWritingStyles(result.writingStyles);
+          setFilteredStyles(result.writingStyles);
         } else {
           setError(result.error || "Failed to fetch writing styles");
         }
@@ -59,33 +56,74 @@ const WritingStyleSelector: React.FC<WritingStyleSelectorProps> = ({
     }
   }, [userId]);
 
-  const handleWritingStyleChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const value = e.target.value;
-    onWritingStyleChange(value === "" ? undefined : value);
-  };
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsExpanded(false);
+        setSearchQuery("");
+      }
+    };
 
-  const getToneDescription = (toneAnalysis: ToneAnalysis): string => {
-    if (!toneAnalysis || typeof toneAnalysis !== "object") {
-      return "Standard";
+    if (isExpanded) {
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
-    const formality = toneAnalysis.formality || "standard";
-    const emotion = toneAnalysis.emotion || "neutral";
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isExpanded]);
 
-    return `${formality.charAt(0).toUpperCase() + formality.slice(1)} - ${
-      emotion.charAt(0).toUpperCase() + emotion.slice(1)
-    }`;
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredStyles([]);
+      setIsExpanded(false);
+    } else {
+      const query = searchQuery.toLowerCase().trim();
+      const filtered = writingStyles.filter((style) => {
+        const styleName = style.styleName.toLowerCase();
+        const vocabularyLevel = getVocabularyLevelText(
+          style.vocabularyLevel
+        ).toLowerCase();
+        const toneDescription = getToneDescription(
+          style.toneAnalysis
+        ).toLowerCase();
+
+        return (
+          styleName.includes(query) ||
+          vocabularyLevel.includes(query) ||
+          toneDescription.includes(query)
+        );
+      });
+      setFilteredStyles(filtered);
+      setIsExpanded(true);
+    }
+  }, [searchQuery, writingStyles]);
+
+  const handleWritingStyleSelect = (writingStyleId: string) => {
+    if (selectedWritingStyleId === writingStyleId) {
+      onWritingStyleChange(undefined);
+    } else {
+      onWritingStyleChange(writingStyleId);
+    }
+    setIsExpanded(false);
+    setSearchQuery("");
   };
 
-  const getVocabularyLevelText = (level: number | null): string => {
-    if (level === null) return "Standard";
-    if (level <= 3) return "Basic";
-    if (level <= 6) return "Intermediate";
-    if (level <= 8) return "Advanced";
-    return "Expert";
+  const handleClearSelection = () => {
+    onWritingStyleChange(undefined);
+    setIsExpanded(false);
+    setSearchQuery("");
   };
+
+  const getSelectedStyle = () => {
+    return writingStyles.find((style) => style.id === selectedWritingStyleId);
+  };
+
+  const selectedStyle = getSelectedStyle();
 
   return (
     <div className="p-4 border-b-2 border-border-default">
@@ -122,24 +160,38 @@ const WritingStyleSelector: React.FC<WritingStyleSelectorProps> = ({
           </Link>
         </div>
       ) : (
-        <div className="mt-3">
-          <select
-            value={selectedWritingStyleId || ""}
-            onChange={handleWritingStyleChange}
-            disabled={disabled}
-            className="w-full px-3 py-2 border-2 rounded-lg hover:bg-background-hover focus:outline-none focus:ring-1 bg-background-input text-sm transition-colors border-border-default focus:ring-text-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <option value="">Use default writing style</option>
-            {writingStyles.map((style) => (
-              <option key={style.id} value={style.id}>
-                {style.styleName} -{" "}
-                {getVocabularyLevelText(style.vocabularyLevel)} (
-                {getToneDescription(style.toneAnalysis)})
-              </option>
-            ))}
-          </select>
+        <div className="mt-3 relative">
+          {/* Selected Style Display */}
+          {selectedStyle && (
+            <SelectedStyleDisplay
+              selectedStyle={selectedStyle}
+              onClearSelection={handleClearSelection}
+              disabled={disabled}
+            />
+          )}
 
-          {selectedWritingStyleId && (
+          {/* Search Interface */}
+          <div className="relative">
+            <SearchInput
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              disabled={disabled}
+            />
+
+            {/* Dropdown Content */}
+            {isExpanded && (
+              <WritingStylesDropdown
+                filteredStyles={filteredStyles}
+                searchQuery={searchQuery}
+                selectedWritingStyleId={selectedWritingStyleId}
+                onWritingStyleSelect={handleWritingStyleSelect}
+                dropdownRef={dropdownRef}
+              />
+            )}
+          </div>
+
+          {/* Help Text */}
+          {selectedStyle && (
             <div className="mt-2 p-2 bg-background-hover rounded-lg">
               <p className="text-xs text-text-secondary">
                 Selected style will be used to personalize your document&apos;s

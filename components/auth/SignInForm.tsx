@@ -17,7 +17,7 @@ export default function SignInForm() {
     try {
       const result = await authAPI.signIn(email, password);
       if (result.success) {
-        window.location.href = "/dashboard";
+        window.location.href = "/documents";
       } else {
         window.location.href = `/auth/signin?error=${encodeURIComponent(
           result.error || "Sign in failed"
