@@ -3,11 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 
-interface FeedbackDetailHeaderProps {
-  title: string;
-}
-
-const FeedbackDetailHeader = ({ title }: FeedbackDetailHeaderProps) => {
+const FeedbackDetailHeader = () => {
   const router = useRouter();
 
   return (

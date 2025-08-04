@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 const PreferencesSettings = () => {
-  const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -18,19 +17,16 @@ const PreferencesSettings = () => {
 
   const handlePreferenceChange = async (key: string, value: boolean) => {
     setPreferences((prev) => ({ ...prev, [key]: value }));
-    
+
     // Simulate saving preference
-    setIsLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
       setMessage({ type: "success", text: "Preference updated successfully!" });
-    } catch (error) {
+    } catch {
       setMessage({
         type: "error",
         text: "Failed to update preference. Please try again.",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -111,12 +107,8 @@ const PreferencesSettings = () => {
           <div>
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-medium text-gray-900">
-                  Dark Mode
-                </h3>
-                <p className="text-sm text-gray-500">
-                  Switch to dark theme
-                </p>
+                <h3 className="text-sm font-medium text-gray-900">Dark Mode</h3>
+                <p className="text-sm text-gray-500">Switch to dark theme</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -135,9 +127,7 @@ const PreferencesSettings = () => {
           <div>
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-medium text-gray-900">
-                  Auto Save
-                </h3>
+                <h3 className="text-sm font-medium text-gray-900">Auto Save</h3>
                 <p className="text-sm text-gray-500">
                   Automatically save your work
                 </p>
@@ -177,4 +167,4 @@ const PreferencesSettings = () => {
   );
 };
 
-export default PreferencesSettings; 
+export default PreferencesSettings;
