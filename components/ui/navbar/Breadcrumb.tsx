@@ -73,6 +73,7 @@ const Breadcrumb = () => {
       if (segment === "dashboard") displayName = "Dashboard";
       else if (segment === "documents") displayName = "Documents";
       else if (segment === "writing-styles") displayName = "Writing Styles";
+      else if (segment === "settings") displayName = "Settings";
       else if (segment === "create") displayName = "Create";
       else if (segment === "auth") displayName = "Auth";
       else if (segment === "signin") displayName = "Sign In";
@@ -164,6 +165,7 @@ const Breadcrumb = () => {
           if (segment === "dashboard") displayName = "Dashboard";
           else if (segment === "documents") displayName = "Documents";
           else if (segment === "writing-styles") displayName = "Writing Styles";
+          else if (segment === "settings") displayName = "Settings";
           else if (segment === "create") displayName = "Create";
           else if (segment === "auth") displayName = "Auth";
           else if (segment === "signin") displayName = "Sign In";

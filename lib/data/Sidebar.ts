@@ -1,4 +1,4 @@
-import { DocumentIcon, PaintBrushIcon } from "./SidebarIcons";
+import { DocumentIcon, PaintBrushIcon, SettingsIcon } from "./SidebarIcons";
 
 export const sidebarItems = [
   {
@@ -14,3 +14,10 @@ export const sidebarItems = [
     href: "/writing-styles",
   },
 ];
+
+export const sidebarSettingsItem = {
+  id: 4,
+  icon: SettingsIcon,
+  label: "Settings",
+  href: "/settings",
+};
